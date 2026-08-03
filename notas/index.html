@@ -463,7 +463,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "02/08 22:10";
+const VERSION = "02/08 22:19";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -497,6 +497,7 @@ function desdeSemilla(S) {
     notas: JSON.parse(JSON.stringify(S.notas || [])),
     conducta: JSON.parse(JSON.stringify(S.conducta || [])),
     manual: JSON.parse(JSON.stringify(S.manual || [])),
+    finales: JSON.parse(JSON.stringify(S.finales || [])),
     asistencia: {},          // se llena desde la nube, solo para la ficha combinada
     editado: {}, sync: {}, bajas: {},
     config: Object.assign({ escalaMin: 1, escalaMax: 10, conductaInicial: 10,
@@ -511,7 +512,7 @@ function cargar() {
       const d = JSON.parse(crudo);
       if (d && d.alumnos && d.items) {
         for (const k of ["asistencia", "editado", "sync", "bajas"]) d[k] = d[k] || {};
-        for (const k of ["notas", "conducta", "manual"]) d[k] = d[k] || [];
+        for (const k of ["notas", "conducta", "manual", "finales"]) d[k] = d[k] || [];
         return d;
       }
     }
@@ -557,7 +558,9 @@ function reindexar() {
   for (const n of D.notas) nota[n.alumno + "|" + n.item] = n.valor;
   const manual = {};
   for (const m of D.manual) manual[m.alumno + "|" + m.cuatrimestre] = m.valor;
-  IDX = { porCurso, alumnoPorId, cursoPorId, itemsPorCurso, itemPorId, nota, manual };
+  const final = {};
+  for (const f of D.finales) final[f.alumno] = f;
+  IDX = { porCurso, alumnoPorId, cursoPorId, itemsPorCurso, itemPorId, nota, manual, final };
 }
 
 /* ---------------- cálculo ---------------- */
@@ -605,7 +608,10 @@ function itemEnUso(item) {
 
 function promedioDe(alumnoId, cuat) {
   const v = valoresDe(alumnoId, cuat);
-  if (!v.length) return null;
+  // La conducta sola no hace una nota de cuatrimestre: como todos arrancan en 10
+  // y la conducta existe en los dos cuatrimestres, si contara sola todos tendrian
+  // un 10 en un cuatrimestre donde todavia no entregaron nada.
+  if (!v.some((x) => x.item.tipo !== "conducta")) return null;
   return v.reduce((t, x) => t + x.valor, 0) / v.length;
 }
 
@@ -616,6 +622,33 @@ function notaCuatrimestre(alumnoId, cuat) {
   const calc = prom === null ? null : redondear(prom);
   return { valor: m !== undefined ? m : calc, calculado: calc, promedio: prom,
            aMano: m !== undefined };
+}
+
+/** El cierre del ano. El promedio de los dos cuatrimestres es SOLO referencia:
+ *  la nota final la escribe el docente y el sistema nunca la copia ni la sugiere. */
+function cierreDe(alumnoId) {
+  const c1 = notaCuatrimestre(alumnoId, 1).valor;
+  const c2 = notaCuatrimestre(alumnoId, 2).valor;
+  const hay = [c1, c2].filter((v) => v !== null);
+  const promedio = hay.length ? hay.reduce((a, b) => a + b, 0) / hay.length : null;
+  const g = IDX.final[alumnoId] || {};
+  return {
+    c1, c2, promedio,
+    cuantos: hay.length,
+    final: g.final ?? null,
+    diciembre: g.diciembre ?? null,
+    febrero: g.febrero ?? null,
+  };
+}
+
+function guardarCierre(alumnoId, campo, valor) {
+  let g = D.finales.find((x) => x.alumno === alumnoId);
+  if (!g) { g = { alumno: alumnoId }; D.finales.push(g); }
+  if (valor === null) delete g[campo];
+  else g[campo] = valor;
+  if (Object.keys(g).length === 1) D.finales = D.finales.filter((x) => x !== g);
+  const al = IDX.alumnoPorId[alumnoId];
+  marcarEdicion("f|" + al.curso);
 }
 
 /* ---------------- navegación ---------------- */
@@ -943,6 +976,39 @@ function pintarAlumno() {
     </div>`;
   }
 
+  /* cierre del año: todo a mano */
+  if (!imprimirSinNotas) {
+    const ci = cierreDe(al.id);
+    h += `<div class="recuadro"><h3>Cierre del año</h3>
+      <div class="tabla-wrap"><table>
+        <tr><td>1er cuatrimestre</td><td class="num"><strong>${ci.c1 === null ? "—" : ci.c1}</strong></td></tr>
+        <tr><td>2do cuatrimestre</td><td class="num"><strong>${ci.c2 === null ? "—" : ci.c2}</strong></td></tr>
+        <tr><td>Promedio de los dos <small style="color:var(--suave)">(referencia)</small></td>
+            <td class="num">${ci.promedio === null ? "—" : ci.promedio.toFixed(2)}${
+              ci.cuantos === 1 ? ' <small style="color:var(--suave)">de uno solo</small>' : ""}</td></tr>
+      </table></div>
+      <div class="final" style="margin-top:12px">
+        <div>
+          <label class="et" for="notaFinalAnual">Nota final</label>
+          <input type="number" id="notaFinalAnual" min="${D.config.escalaMin}"
+            max="${D.config.escalaMax}" step="1" value="${ci.final === null ? "" : ci.final}">
+        </div>
+        <div>
+          <label class="et" for="notaDiciembre">Diciembre</label>
+          <input type="number" id="notaDiciembre" min="${D.config.escalaMin}"
+            max="${D.config.escalaMax}" step="1" value="${ci.diciembre === null ? "" : ci.diciembre}">
+        </div>
+        <div>
+          <label class="et" for="notaFebrero">Febrero</label>
+          <input type="number" id="notaFebrero" min="${D.config.escalaMin}"
+            max="${D.config.escalaMax}" step="1" value="${ci.febrero === null ? "" : ci.febrero}">
+        </div>
+      </div>
+      <p class="nota-pie">Estas tres las escribís vos. El promedio de arriba es solo para
+        mirarlo mientras decidís: el sistema no lo copia ni lo sugiere.</p>
+    </div>`;
+  }
+
   /* conducta */
   const eps = episodiosDe(al.id, cuat);
   h += `<div class="sep"></div><h3>Conducta: ${conductaDe(al.id, cuat)}</h3>`;
@@ -972,6 +1038,22 @@ function pintarAlumno() {
       guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
     });
   }
+  for (const [id, campo] of [["notaFinalAnual", "final"], ["notaDiciembre", "diciembre"],
+                             ["notaFebrero", "febrero"]]) {
+    const e = $("#" + id);
+    if (!e) continue;
+    e.addEventListener("change", () => {
+      const v = e.value.trim();
+      let n = null;
+      if (v !== "") {
+        n = Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, Math.round(Number(v))));
+        if (isNaN(n)) n = null;
+      }
+      guardarCierre(al.id, campo, n);
+      guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
+    });
+  }
+
   const vc = $("#btnVolverCalculado");
   if (vc) vc.addEventListener("click", () => {
     D.manual = D.manual.filter((m) => !(m.alumno === al.id && +m.cuatrimestre === cuat));
@@ -1034,7 +1116,7 @@ function pintarCurso() {
   h += `<div class="panel"><h2>Notas del curso</h2><div class="tabla-wrap"><table>
     <tr><th>Alumno</th>` +
     items.map((i) => `<th class="num">${esc(i.nombre.split(":")[0])}</th>`).join("") +
-    `<th class="num">Prom.</th><th class="num">Nota</th></tr>`;
+    `<th class="num">Prom.</th><th class="num">Nota</th><th class="num">Final</th></tr>`;
   for (const f of filas.sort((x, y) => (x.nc.valor ?? 99) - (y.nc.valor ?? 99))) {
     h += `<tr class="${f.nc.valor !== null && f.nc.valor < 7 ? "riesgo" : ""}">
       <td class="col-nombre"><span class="nombre-alumno">${esc(f.a.nombre)}</span></td>`;
@@ -1044,7 +1126,8 @@ function pintarCurso() {
     }
     h += `<td class="num">${f.nc.promedio === null ? "—" : f.nc.promedio.toFixed(1)}</td>
       <td class="num"><strong>${f.nc.valor === null ? "—" : f.nc.valor}</strong>${
-        f.nc.aMano ? ' <small style="color:var(--t)">(a mano)</small>' : ""}</td></tr>`;
+        f.nc.aMano ? ' <small style="color:var(--t)">(a mano)</small>' : ""}</td>
+      <td class="num">${cierreDe(f.a.id).final ?? "·"}</td></tr>`;
   }
   h += `</table></div>
     <p class="nota-pie">El punto (·) es que todavía no entregó o no le cargaste la nota.
@@ -1093,6 +1176,7 @@ function pintarDatos() {
     <tr><td>Alumnos con alguna nota</td><td class="num">${conNotas}</td></tr>
     <tr><td>Episodios de conducta</td><td class="num">${D.conducta.length}</td></tr>
     <tr><td>Notas puestas a mano</td><td class="num">${D.manual.length}</td></tr>
+    <tr><td>Cierres de año cargados</td><td class="num">${D.finales.length}</td></tr>
     <tr><td>Jornadas de asistencia leídas</td><td class="num">${Object.keys(D.asistencia || {}).length}</td></tr>
   </table></div>`;
 }
@@ -1172,6 +1256,11 @@ $("#btnCsv").addEventListener("click", () => {
                       nc.aMano ? "cargada a mano" : "calculada", nc.valor]);
         }
       }
+      const ci = cierreDe(a.id);
+      for (const [et, v] of [["NOTA FINAL", ci.final], ["DICIEMBRE", ci.diciembre],
+                             ["FEBRERO", ci.febrero]]) {
+        if (v !== null) filas.push([c.etiqueta, a.nombre, "", et, "cargada a mano", v]);
+      }
     }
   }
   bajar(`notas_${hoyISO().replace(/-/g, "")}.csv`, csv(filas));
@@ -1194,7 +1283,7 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
       if (!confirm("Esto reemplaza todo lo que hay en este dispositivo. ¿Seguir?")) return;
       D = d;
       for (const k of ["asistencia", "editado", "sync", "bajas"]) D[k] = D[k] || {};
-      for (const k of ["notas", "conducta", "manual"]) D[k] = D[k] || [];
+      for (const k of ["notas", "conducta", "manual", "finales"]) D[k] = D[k] || [];
       guardar(); reindexar(); refrescarSelects(); pintarDatos();
       alerta("#avisoDatos", "Copia restaurada.", "ok");
     } catch (e) { alerta("#avisoDatos", "Ese archivo no es una copia válida.", "mal"); }
@@ -1215,6 +1304,7 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
      n|<item>       las notas de un trabajo
      c|<curso>|<c>  los episodios de conducta de un curso y cuatrimestre
      q|<curso>|<c>  las notas de cuatrimestre puestas a mano
+     f|<curso>      el cierre del ano: nota final, diciembre y febrero
 
    Lo que esta app LEE pero no toca: el padron y las jornadas, que son
    de la app de asistencia. Por eso el mismo alumno es uno solo en las
@@ -1289,6 +1379,14 @@ function contenidoDe(clave) {
     });
     return { tipo: "nc", curso: p[1], cuatrimestre: +p[2], episodios: eps };
   }
+  if (p[0] === "f") {
+    const cierres = {};
+    for (const g of D.finales) {
+      const al = IDX.alumnoPorId[g.alumno];
+      if (al && al.curso === p[1]) cierres[g.alumno] = g;
+    }
+    return { tipo: "nf", curso: p[1], cierres };
+  }
   if (p[0] === "q") {
     const m = {};
     for (const x of D.manual) {
@@ -1346,6 +1444,16 @@ function aplicarBloque(c, editado) {
     for (const e of (c.episodios || [])) D.conducta.push(e);
     return true;
   }
+  if (c.tipo === "nf") {
+    D.finales = D.finales.filter((g) => {
+      const al = IDX.alumnoPorId[g.alumno];
+      return !(al && al.curso === c.curso);
+    });
+    for (const aid in (c.cierres || {})) {
+      D.finales.push(Object.assign({}, c.cierres[aid], { alumno: aid }));
+    }
+    return true;
+  }
   if (c.tipo === "nq") {
     D.manual = D.manual.filter((x) => {
       const al = IDX.alumnoPorId[x.alumno];
@@ -1366,6 +1474,7 @@ function claveDe(c) {
   if (c.tipo === "nn") return "n|" + c.item;
   if (c.tipo === "nc") return "c|" + c.curso + "|" + c.cuatrimestre;
   if (c.tipo === "nq") return "q|" + c.curso + "|" + c.cuatrimestre;
+  if (c.tipo === "nf") return "f|" + c.curso;
   return null;   // padrón y jornadas: son de la otra app, siempre se aplican
 }
 
