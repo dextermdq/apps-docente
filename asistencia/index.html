@@ -491,7 +491,7 @@ const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
 
 /* Sello de esta version, para saber si un dispositivo esta al dia. */
-const VERSION = "02/08 22:29";
+const VERSION = "02/08 22:51";
 
 const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
 const SIGLAS  = ["P", "T", "A", "J"];
@@ -1993,6 +1993,7 @@ function combinar(R) {
   // registros de asistencia no engancharían con nadie.
   const idsCurso = new Set(D.cursos.map((c) => c.id));
   for (const rc of R.cursos || []) {
+    if (rc.id && D.bajas[rc.id]) continue;   // curso dado de baja: no vuelve
     const et = normTexto(rc.etiqueta);
     let lc = cursoPorEtiqueta[et];
     if (!lc) {
@@ -2032,6 +2033,15 @@ function combinar(R) {
       la.alta = ra.alta;   // se incorporó antes de lo que sabía este dispositivo
     }
     mapAlumno[ra.id] = la.id;
+  }
+
+  // los cursos dados de baja se van, con sus alumnos
+  const cursosBajados = D.cursos.filter((c) => D.bajas[c.id]);
+  if (cursosBajados.length) {
+    const ids = new Set(cursosBajados.map((c) => c.id));
+    D.cursos = D.cursos.filter((c) => !ids.has(c.id));
+    for (const a of D.alumnos.filter((a) => ids.has(a.curso))) D.bajas[a.id] = new Date().toISOString();
+    res.cursosBajados = cursosBajados.length;
   }
 
   // una baja que llegó del otro dispositivo también se aplica acá

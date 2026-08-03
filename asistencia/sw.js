@@ -7,7 +7,7 @@
    El nombre de la cache lleva el hash del archivo, asi que cada version nueva
    estrena cache y borra la anterior. Los datos de asistencia NO pasan por aca:
    viven en el dispositivo. */
-const CACHE = "asistencia-a729f5c3857d";
+const CACHE = "asistencia-6694f7797068";
 const ARCHIVOS = ["./", "./index.html", "./manifest.webmanifest"];
 const ESPERA_MAXIMA = 3000;
 

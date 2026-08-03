@@ -463,7 +463,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "02/08 22:25";
+const VERSION = "02/08 22:51";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -471,6 +471,7 @@ const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
 /* ---------------- utilidades ---------------- */
 const $ = (s) => document.querySelector(s);
 const crear = (t, p = {}) => Object.assign(document.createElement(t), p);
+const normTexto = (s) => String(s || "").trim().toLocaleUpperCase("es").replace(/\s+/g, " ");
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const deB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -683,6 +684,43 @@ function llenarCursos(sel, valor) {
   if (valor && D.cursos.some((c) => c.id === valor)) sel.value = valor;
 }
 
+/* La lista de trabajos del año, la misma del original. Un curso que llega nuevo
+   desde la app de asistencia no tiene ninguno: con esto se crean todos de una. */
+const TRABAJOS_DEL_ANIO = [
+  ['TP1: "Alfabetización informática computacional"', 1, "trabajo"],
+  ['TP2: "Redes digitales de información"', 1, "trabajo"],
+  ['TP3: "Introducción a la programación"', 1, "trabajo"],
+  ['TP4: "Inteligencia artificial"', 1, "trabajo"],
+  ["CARPETA 1", 1, "carpeta"],
+  ["CONDUCTA 1", 1, "conducta"],
+  ["EXAMEN", 1, "examen"],
+  ["TP5: \"Adiccion, fobia y TOC's a las TIC\"", 2, "trabajo"],
+  ['TP6: "Cyberbullying"', 2, "trabajo"],
+  ['TP7: "Fotografía digital - MDP"', 2, "trabajo"],
+  ['TP8: "Seguridad¨informática"', 2, "trabajo"],
+  ['TP FINAL: "Redes sociales, MK digital y Diseño Gráfico"', 2, "trabajo"],
+  ["CARPETA 2", 2, "carpeta"],
+  ["CONDUCTA 2", 2, "conducta"],
+];
+
+/** Crea en un curso los trabajos del año que le falten. No pisa los que ya
+ *  existen ni resucita los que hayas eliminado. */
+function crearTrabajosDelAnio(cursoId) {
+  const propios = IDX.itemsPorCurso[cursoId] || [];
+  const yaEstan = new Set(propios.map((i) => normTexto(i.nombre)));
+  let creados = 0;
+  TRABAJOS_DEL_ANIO.forEach(([nombre, cuat, tipo], i) => {
+    if (yaEstan.has(normTexto(nombre))) return;
+    const id = "I" + cursoId.slice(1) + "-" + String(i + 1).padStart(2, "0");
+    if (D.bajas[id] || D.items.some((x) => x.id === id)) return;  // lo borraste vos
+    D.items.push({ id, curso: cursoId, cuatrimestre: cuat, orden: i + 1,
+                   nombre, tipo });
+    creados++;
+  });
+  if (creados) { marcarEdicion("items"); guardar(); reindexar(); sincronizarDespues(); }
+  return creados;
+}
+
 /* ================= CARGAR NOTAS ================= */
 let borrador = {};
 
@@ -713,7 +751,18 @@ function pintarCargar() {
   }
   if (!it) {
     cont.innerHTML = `<p class="aviso info"><strong>Este curso no tiene trabajos cargados.</strong><br>
-      Tocá <strong>Agregar trabajo</strong> para crear el primero.</p>`;
+      Es un curso nuevo: todavía no tiene la lista del año.</p>
+      <div class="acciones">
+        <button class="btn" id="btnCrearAnio">Crear los ${TRABAJOS_DEL_ANIO.length} trabajos del año</button>
+      </div>
+      <p class="nota-pie">Crea los mismos que usás en los otros cursos: los TP, las carpetas,
+        la conducta y el examen. Después borrás los que no vayas a dar, o agregás otros.</p>`;
+    const bc = document.getElementById("btnCrearAnio");
+    if (bc) bc.addEventListener("click", () => {
+      const cuantos = crearTrabajosDelAnio(cid);
+      llenarItems(); pintarCargar();
+      alerta("#avisoCargar", `Listos ${cuantos} trabajos. Elegí uno y empezá a cargar notas.`, "ok");
+    });
     $("#resumenCargar").innerHTML = "";
     return;
   }
@@ -1220,7 +1269,18 @@ function pintarItems() {
   const cid = $("#gItemCurso").value;
   const items = IDX.itemsPorCurso[cid] || [];
   const cont = $("#listaItems");
-  if (!items.length) { cont.innerHTML = `<p class="aviso info">Este curso no tiene ítems.</p>`; return; }
+  if (!items.length) {
+    cont.innerHTML = `<p class="aviso info">Este curso todavía no tiene trabajos.</p>
+      <div class="acciones"><button class="btn" id="btnCrearAnio2">Crear los ${
+        TRABAJOS_DEL_ANIO.length} trabajos del año</button></div>`;
+    const b2 = document.getElementById("btnCrearAnio2");
+    if (b2) b2.addEventListener("click", () => {
+      const cuantos = crearTrabajosDelAnio(cid);
+      pintarItems(); llenarItems();
+      alerta("#avisoDatos", `Creados ${cuantos} trabajos.`, "ok");
+    });
+    return;
+  }
   let h = "";
   for (const i of items) {
     const n = D.notas.filter((x) => x.item === i.id).length;
