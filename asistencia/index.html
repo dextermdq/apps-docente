@@ -491,7 +491,7 @@ const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
 
 /* Sello de esta version, para saber si un dispositivo esta al dia. */
-const VERSION = "02/08 22:51";
+const VERSION = "02/08 22:54";
 
 const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
 const SIGLAS  = ["P", "T", "A", "J"];
@@ -655,6 +655,7 @@ function cargar() {
         d.inferidos = d.inferidos || {};
         d.editado = d.editado || {};
         d.sync = d.sync || {};
+        limpiarClavesInvalidas(d);
         d.bajas = d.bajas || {};
         d.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3 }, d.config || {});
         return d;
@@ -662,6 +663,28 @@ function cargar() {
     }
   } catch (e) { /* si el guardado está corrupto, arrancamos de la semilla */ }
   return desdeSemilla();
+}
+
+/** Barrido de una sola vez.
+ *
+ *  Una version anterior confundia los bloques de la app de notas con jornadas y
+ *  dejaba guardadas claves como "C03|undefined". No hacian dano mientras
+ *  estuvieran marcadas como enviadas, pero al tocar "Subir todo de nuevo" habrian
+ *  publicado jornadas con fecha inexistente. Se limpian al abrir.
+ */
+function limpiarClavesInvalidas(d) {
+  const valida = (k) => k === "__padron__" || /^[^|]+\|\d{4}-\d{2}-\d{2}$/.test(k);
+  let sacadas = 0;
+  for (const k of Object.keys(d.editado || {})) {
+    if (!valida(k)) { delete d.editado[k]; sacadas++; }
+  }
+  for (const k of Object.keys((d.sync && d.sync.enviados) || {})) {
+    if (!valida(k)) delete d.sync.enviados[k];
+  }
+  for (const f of Object.keys(d.registros || {})) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) { delete d.registros[f]; sacadas++; }
+  }
+  return sacadas;
 }
 
 let guardadoPendiente = null;
