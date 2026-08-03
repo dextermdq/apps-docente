@@ -491,7 +491,7 @@ const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
 
 /* Sello de esta version, para saber si un dispositivo esta al dia. */
-const VERSION = "02/08 21:07";
+const VERSION = "02/08 22:29";
 
 const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
 const SIGLAS  = ["P", "T", "A", "J"];
@@ -1694,6 +1694,10 @@ async function sincronizar(subirTodo) {
 
     for (const f of descifradas) {
       const c = f.contenido;
+      // El servidor lo comparten las dos apps. Los bloques que no son de acá
+      // —los de notas, conducta y calificaciones— se ignoran sin tocarlos: son
+      // de la app de notas y esta no tiene nada que hacer con ellos.
+      if (c.tipo !== "p" && c.tipo !== "j") { r.ignorados++; continue; }
       if (c.tipo === "p") {
         // El padrón NUNCA se descarta por ser más viejo, y esto es la clave del
         // asunto: si un dispositivo tocó el padrón un segundo después que otro,
