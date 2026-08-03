@@ -463,7 +463,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "02/08 21:07";
+const VERSION = "02/08 22:10";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -595,6 +595,14 @@ function valoresDe(alumnoId, cuat) {
   return vals;
 }
 
+/** Un item "esta en uso" si ya le cargaste alguna nota a alguien de ese curso.
+ *  Los que nunca usaste existen igual para poder elegirlos, pero no cuentan como
+ *  trabajo adeudado ni ensucian el informe del curso. */
+function itemEnUso(item) {
+  if (item.tipo === "conducta") return true;
+  return D.notas.some((n) => n.item === item.id);
+}
+
 function promedioDe(alumnoId, cuat) {
   const v = valoresDe(alumnoId, cuat);
   if (!v.length) return null;
@@ -639,8 +647,11 @@ function llenarItems() {
   const cid = $("#selCurso").value, sel = $("#selItem"), previo = sel.value;
   sel.innerHTML = "";
   for (const it of (IDX.itemsPorCurso[cid] || [])) {
+    const usado = itemEnUso(it);
+    const cuantas = D.notas.filter((n) => n.item === it.id).length;
     sel.appendChild(crear("option", { value: it.id,
-      textContent: `C${it.cuatrimestre} · ${it.nombre}` }));
+      textContent: `C${it.cuatrimestre} · ${it.nombre}` +
+        (it.tipo === "conducta" ? "" : usado ? `  (${cuantas} cargadas)` : "  — sin cargar") }));
   }
   if (previo && [...sel.options].some((o) => o.value === previo)) sel.value = previo;
 }
@@ -1001,7 +1012,8 @@ function pintarCurso() {
   const cont = $("#fichaCurso");
   if (!c) { cont.innerHTML = ""; return; }
   const alumnos = IDX.porCurso[c.id] || [];
-  const items = (IDX.itemsPorCurso[c.id] || []).filter((i) => +i.cuatrimestre === cuat);
+  const todos = (IDX.itemsPorCurso[c.id] || []).filter((i) => +i.cuatrimestre === cuat);
+  const items = todos.filter(itemEnUso);   // los que nunca usaste no ensucian la tabla
 
   const filas = alumnos.map((a) => ({ a, nc: notaCuatrimestre(a.id, cuat),
                                       cond: conductaDe(a.id, cuat) }));
@@ -1035,11 +1047,15 @@ function pintarCurso() {
         f.nc.aMano ? ' <small style="color:var(--t)">(a mano)</small>' : ""}</td></tr>`;
   }
   h += `</table></div>
-    <p class="nota-pie">El punto (·) es que todavía no entregó o no le cargaste la nota.</p></div>`;
+    <p class="nota-pie">El punto (·) es que todavía no entregó o no le cargaste la nota.
+      ${todos.length > items.length ? `Hay ${todos.length - items.length} trabajos más
+      definidos en este cuatrimestre que todavía no tienen ninguna nota: aparecen en
+      Cargar notas, no acá.` : ""}</p></div>`;
 
   /* quién debe trabajos */
   const deudores = [];
   for (const a of alumnos) {
+    // solo se debe lo que ya se tomo: un trabajo sin ninguna nota todavia no existe
     const faltan = items.filter((i) => i.tipo !== "conducta" && IDX.nota[a.id + "|" + i.id] === undefined);
     if (faltan.length) deudores.push({ a, faltan });
   }
@@ -1092,7 +1108,7 @@ function pintarItems() {
     h += `<div class="gfila" data-i="${i.id}">
       <div class="gnom">${esc(i.nombre)}
         <small>C${i.cuatrimestre} · ${i.tipo}${i.tipo === "conducta" ? " (se arma con episodios)"
-          : " · " + n + (n === 1 ? " nota" : " notas")}</small></div>
+          : n ? " · " + n + (n === 1 ? " nota" : " notas") : " · sin cargar"}</small></div>
       <div class="gacc">
         <button data-acc="renombrar">Renombrar</button>
         ${i.tipo === "conducta" ? "" : '<button data-acc="borrar" class="mal">Eliminar</button>'}
