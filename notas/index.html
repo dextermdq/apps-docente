@@ -463,7 +463,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "02/08 22:51";
+const VERSION = "02/08 22:58";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -514,11 +514,36 @@ function cargar() {
       if (d && d.alumnos && d.items) {
         for (const k of ["asistencia", "editado", "sync", "bajas"]) d[k] = d[k] || {};
         for (const k of ["notas", "conducta", "manual", "finales"]) d[k] = d[k] || [];
+        barrerItemsViejos(d);
         return d;
       }
     }
   } catch (e) { /* guardado corrupto: se arranca de la semilla */ }
   return desdeSemilla();
+}
+
+/** Barrido de una sola vez.
+ *
+ *  Los items pasaron de numerarse de corrido (I001) a llevar el curso adentro
+ *  (I05-03). Los viejos quedaron guardados en cada dispositivo y, como la lista
+ *  se fusiona sumando, volvian al servidor cada vez que alguien sincronizaba:
+ *  cursos con 18 trabajos y notas duplicadas. Se van al abrir, con sus notas.
+ */
+const ID_ITEM_VALIDO = /^I[^-]+-\d{2,}$/;
+
+function barrerItemsViejos(d) {
+  const viejos = (d.items || []).filter((i) => !ID_ITEM_VALIDO.test(i.id));
+  if (!viejos.length) return 0;
+  const ids = new Set(viejos.map((i) => i.id));
+  d.items = d.items.filter((i) => !ids.has(i.id));
+  d.notas = (d.notas || []).filter((x) => !ids.has(x.item));
+  for (const k of Object.keys(d.editado || {})) {
+    if (k.startsWith("n|") && ids.has(k.slice(2))) delete d.editado[k];
+  }
+  for (const k of Object.keys((d.sync && d.sync.enviados) || {})) {
+    if (k.startsWith("n|") && ids.has(k.slice(2))) delete d.sync.enviados[k];
+  }
+  return viejos.length;
 }
 
 let pendienteGuardar = null;
@@ -845,8 +870,14 @@ $("#btnNuevoItem").addEventListener("click", () => {
   const cuat = prompt("¿De qué cuatrimestre? Escribí 1 o 2", "1");
   const c = cuat === "2" ? 2 : 1;
   const propios = (IDX.itemsPorCurso[cid] || []).filter((i) => i.cuatrimestre === c);
+  // el id lleva el curso adentro, como los demas: si se numerara de corrido,
+  // agregar un trabajo correria los de los otros cursos
+  const usados = new Set((IDX.itemsPorCurso[cid] || []).map((i) => i.id));
+  let k = 15;
+  while (usados.has("I" + cid.slice(1) + "-" + String(k).padStart(2, "0")) ||
+         D.bajas["I" + cid.slice(1) + "-" + String(k).padStart(2, "0")]) k++;
   D.items.push({
-    id: nuevoId("I", D.items.map((i) => i.id)),
+    id: "I" + cid.slice(1) + "-" + String(k).padStart(2, "0"),
     curso: cid, cuatrimestre: c, orden: propios.length + 1,
     nombre: nombre.trim().replace(/\s+/g, " "), tipo: "trabajo",
   });
@@ -1519,6 +1550,8 @@ function aplicarBloque(c, editado) {
     const mios = new Set(D.items.map((i) => i.id));
     for (const it of (c.items || [])) {
       if (D.bajas[it.id]) continue;
+      // formato viejo de id: no vuelve, aunque lo mande otro dispositivo
+      if (typeof ID_ITEM_VALIDO !== "undefined" && !ID_ITEM_VALIDO.test(it.id)) continue;
       if (!mios.has(it.id)) D.items.push(it);
     }
     D.items = D.items.filter((i) => !D.bajas[i.id]);
