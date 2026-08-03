@@ -317,7 +317,7 @@ td.col-nombre{min-width:150px}
         <select id="selCurso"></select>
       </div>
       <div class="campo">
-        <label class="et" for="selItem">Trabajo o evaluación</label>
+        <label class="et" for="selItem">Trabajo, evaluación o nota de cierre</label>
         <select id="selItem"></select>
       </div>
     </div>
@@ -463,7 +463,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "02/08 22:58";
+const VERSION = "02/08 23:14";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -749,6 +749,27 @@ function crearTrabajosDelAnio(cursoId) {
 /* ================= CARGAR NOTAS ================= */
 let borrador = {};
 
+/* Las notas de cierre no son trabajos: no se promedian con nada y las escribe
+   el docente. Se cargan igual que un trabajo para no tener que entrar a las 320
+   fichas una por una. */
+const CIERRES = {
+  "__q1":        { et: "NOTA DEL 1er CUATRIMESTRE", clase: "cuat",  cuat: 1 },
+  "__q2":        { et: "NOTA DEL 2do CUATRIMESTRE", clase: "cuat",  cuat: 2 },
+  "__final":     { et: "NOTA FINAL DEL AÑO",        clase: "anual", campo: "final" },
+  "__diciembre": { et: "DICIEMBRE",                 clase: "anual", campo: "diciembre" },
+  "__febrero":   { et: "FEBRERO",                   clase: "anual", campo: "febrero" },
+};
+
+/** Cuantos alumnos del curso ya tienen escrita esa nota de cierre. */
+function cuantasDeCierre(cid, clave) {
+  const c = CIERRES[clave];
+  const alumnos = IDX.porCurso[cid] || [];
+  if (c.clase === "cuat") {
+    return alumnos.filter((a) => IDX.manual[a.id + "|" + c.cuat] !== undefined).length;
+  }
+  return alumnos.filter((a) => (IDX.final[a.id] || {})[c.campo] != null).length;
+}
+
 function llenarItems() {
   const cid = $("#selCurso").value, sel = $("#selItem"), previo = sel.value;
   sel.innerHTML = "";
@@ -759,16 +780,27 @@ function llenarItems() {
       textContent: `C${it.cuatrimestre} · ${it.nombre}` +
         (it.tipo === "conducta" ? "" : usado ? `  (${cuantas} cargadas)` : "  — sin cargar") }));
   }
+  const g = crear("optgroup");
+  g.label = "Notas de cierre (las escribís vos)";
+  for (const [clave, c] of Object.entries(CIERRES)) {
+    const ya = cuantasDeCierre(cid, clave);
+    g.appendChild(crear("option", { value: clave,
+      textContent: c.et + (ya ? `  (${ya} escritas)` : "  — sin escribir") }));
+  }
+  sel.appendChild(g);
   if (previo && [...sel.options].some((o) => o.value === previo)) sel.value = previo;
 }
 
 function pintarCargar() {
   const cid = $("#selCurso").value;
-  const it = IDX.itemPorId[$("#selItem").value];
+  const elegido = $("#selItem").value;
+  const it = IDX.itemPorId[elegido];
   const cont = $("#listaNotas");
   const alumnos = IDX.porCurso[cid] || [];
   cont.innerHTML = "";
   $("#avisoCargar").innerHTML = "";
+
+  if (CIERRES[elegido]) { pintarCargarCierre(cid, elegido, alumnos, cont); return; }
 
   if (!D.items.length && !alumnos.length) {
     cont.innerHTML = `<p class="aviso info">Todavía no hay datos en este dispositivo.</p>`;
@@ -816,15 +848,103 @@ function pintarCargar() {
   pintarResumenCargar();
 }
 
+/** La carga de una nota de cierre. Al lado de cada casillero va la referencia
+ *  (el promedio, o las notas de los cuatrimestres), pero nunca se copia sola:
+ *  si el casillero esta vacio, queda vacio. */
+function pintarCargarCierre(cid, clave, alumnos, cont) {
+  const c = CIERRES[clave];
+  if (!alumnos.length) {
+    cont.innerHTML = `<p class="aviso info">Este curso no tiene alumnos.</p>`;
+    $("#resumenCargar").innerHTML = "";
+    return;
+  }
+
+  let cabecera = "";
+  if (c.clase === "cuat") {
+    cabecera = `<p class="aviso info">Escribís vos la nota del ${c.cuat}º cuatrimestre.
+      Al lado de cada alumno está el promedio de sus trabajos, <strong>solo como
+      referencia</strong>: no se copia solo. Si dejás el casillero vacío, la nota
+      queda calculada y puede moverse cuando cargues más trabajos.</p>`;
+  } else if (c.campo === "final") {
+    cabecera = `<p class="aviso info">La nota final del año la escribís vos.
+      Al lado están las notas de los dos cuatrimestres y su promedio, de referencia.</p>`;
+  } else {
+    cabecera = `<p class="aviso info">Nota de ${c.et.toLowerCase()}. Se completa solo
+      para los alumnos que rinden; el resto queda vacío.</p>`;
+  }
+  cont.innerHTML = cabecera;
+
+  borrador = {};
+  for (const a of alumnos) {
+    const ci = cierreDe(a.id);
+    let actual, referencia;
+
+    if (c.clase === "cuat") {
+      const nc = notaCuatrimestre(a.id, c.cuat);
+      actual = nc.aMano ? nc.valor : "";
+      const faltan = faltantesDe(a.id, c.cuat).length;
+      referencia = nc.calculado === null
+        ? "sin notas todavía"
+        : `promedio ${nc.promedio.toFixed(2)} → ${nc.calculado}` +
+          (faltan ? `  ·  le faltan ${faltan}` : "") +
+          (nc.aMano ? "" : "  ·  hoy va la calculada");
+    } else if (c.campo === "final") {
+      actual = ci.final === null ? "" : ci.final;
+      referencia = `1º ${ci.c1 ?? "—"}  ·  2º ${ci.c2 ?? "—"}` +
+        (ci.promedio === null ? "" : `  ·  promedio ${ci.promedio.toFixed(2)}`);
+    } else {
+      actual = ci[c.campo] === null ? "" : ci[c.campo];
+      referencia = `final ${ci.final ?? "sin cargar"}`;
+    }
+
+    borrador[a.id] = actual;
+    const fila = crear("div", { className: "nota-fila" });
+    fila.innerHTML = `<div class="quien">${esc(a.nombre)}<small>${referencia}</small></div>`;
+    const inp = crear("input", { type: "number", inputMode: "numeric",
+      className: "nota" + (actual !== "" ? " puesta" : ""), value: actual });
+    inp.min = D.config.escalaMin; inp.max = D.config.escalaMax; inp.step = 1;
+    inp.dataset.a = a.id;
+    fila.appendChild(inp);
+    cont.appendChild(fila);
+  }
+  pintarResumenCargar();
+}
+
+/** Guarda toda una columna de cierre de una vez. */
+function guardarCierreDelCurso(cid, clave) {
+  const c = CIERRES[clave];
+  const alumnos = IDX.porCurso[cid] || [];
+  let puestas = 0;
+  for (const a of alumnos) {
+    const v = borrador[a.id];
+    const n = (v === "" || v === null || v === undefined) ? null
+      : Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, Math.round(Number(v))));
+    if (c.clase === "cuat") {
+      D.manual = D.manual.filter((m) => !(m.alumno === a.id && +m.cuatrimestre === c.cuat));
+      // se guarda aunque coincida con el promedio: la escribiste vos y no se
+      // tiene que mover sola cuando cargues otro trabajo
+      if (n !== null && !isNaN(n)) { D.manual.push({ alumno: a.id, cuatrimestre: c.cuat, valor: n }); puestas++; }
+    } else {
+      guardarCierre(a.id, c.campo, isNaN(n) ? null : n);
+      if (n !== null && !isNaN(n)) puestas++;
+    }
+  }
+  if (c.clase === "cuat") marcarEdicion("q|" + cid + "|" + c.cuat);
+  guardar(); reindexar(); llenarItems(); pintarCargar(); sincronizarDespues();
+  alerta("#avisoCargar", `Guardado ${c.et.toLowerCase()}: ${puestas} de ${alumnos.length} alumnos.`, "ok");
+}
+
 function pintarResumenCargar() {
-  const it = IDX.itemPorId[$("#selItem").value];
-  if (!it) return;
+  const elegido = $("#selItem").value;
+  const it = IDX.itemPorId[elegido];
+  if (!it && !CIERRES[elegido]) return;
   const vals = Object.values(borrador).filter((v) => v !== "" && v !== null).map(Number);
   const prom = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
   const total = (IDX.porCurso[$("#selCurso").value] || []).length;
   const sinCargar = total - vals.length;
+  const etiqueta = CIERRES[elegido] ? "escritas" : "con nota";
   $("#resumenCargar").innerHTML =
-    `<span class="chip p">${vals.length} con nota</span>` +
+    `<span class="chip p">${vals.length} ${etiqueta}</span>` +
     `<span class="chip ${sinCargar ? "t" : "n"}">${sinCargar} sin cargar</span>` +
     (prom !== null ? `<span class="chip j">promedio ${prom.toFixed(2)}</span>` : "");
 }
@@ -845,7 +965,9 @@ $("#listaNotas").addEventListener("input", (ev) => {
 });
 
 $("#btnGuardarNotas").addEventListener("click", () => {
-  const it = IDX.itemPorId[$("#selItem").value];
+  const elegido = $("#selItem").value;
+  if (CIERRES[elegido]) { guardarCierreDelCurso($("#selCurso").value, elegido); return; }
+  const it = IDX.itemPorId[elegido];
   if (!it || it.tipo === "conducta") return;
   let puestas = 0, borradas = 0;
   D.notas = D.notas.filter((n) => n.item !== it.id);
@@ -1134,7 +1256,8 @@ function pintarAlumno() {
       D.manual = D.manual.filter((m) => !(m.alumno === al.id && +m.cuatrimestre === cuat));
       if (v !== "") {
         const n = Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, Math.round(Number(v))));
-        if (!isNaN(n) && n !== nc.calculado) D.manual.push({ alumno: al.id, cuatrimestre: cuat, valor: n });
+        // se guarda aunque coincida con el promedio: la escribiste vos
+        if (!isNaN(n)) D.manual.push({ alumno: al.id, cuatrimestre: cuat, valor: n });
       }
       marcarEdicion("q|" + al.curso + "|" + cuat);
       guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
