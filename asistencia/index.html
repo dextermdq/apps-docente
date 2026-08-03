@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asistencia">
+<meta name="format-detection" content="telephone=no">
+<title>Asistencia 2026</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Cpath d='M18 33l9 9 19-19' stroke='white' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest"><meta name="robots" content="noindex, nofollow">
+<style>
+:root{
+  --p:#059669; --p-bg:#d1fae5;
+  --t:#d97706; --t-bg:#fef3c7;
+  --a:#dc2626; --a-bg:#fee2e2;
+  --j:#2563eb; --j-bg:#dbeafe;
+  --tinta:#0f172a; --suave:#64748b; --borde:#e2e8f0;
+  --fondo:#f1f5f9; --panel:#fff; --acento:#0f766e;
+  --radio:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,select,input{touch-action:manipulation}
+body{
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color:var(--tinta); background:var(--fondo);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+h1,h2,h3{margin:0 0 .4em;line-height:1.25}
+h1{font-size:1.25rem}
+h2{font-size:1.05rem}
+h3{font-size:.95rem}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+select,input{font:inherit;color:inherit}
+
+/* ---------- estructura ---------- */
+header{
+  position:sticky;top:0;z-index:50;background:var(--acento);color:#fff;
+  padding:10px 14px calc(10px + env(safe-area-inset-top)) 14px;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  box-shadow:0 2px 8px rgba(0,0,0,.12)
+}
+.barra-sup{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.barra-sup .titulo{font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+.barra-sup .titulo small{font-weight:600;font-size:.7rem;opacity:.75;letter-spacing:0;
+  margin-left:6px;white-space:nowrap}
+nav{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{
+  padding:8px 13px;border-radius:999px;font-size:.88rem;font-weight:600;
+  color:#d1faf3;background:rgba(255,255,255,.13);white-space:nowrap
+}
+nav button[aria-current="true"]{background:#fff;color:var(--acento)}
+main{padding:14px;max-width:940px;margin:0 auto}
+.panel{background:var(--panel);border-radius:var(--radio);padding:14px;margin-bottom:14px;
+  box-shadow:0 1px 3px rgba(15,23,42,.07)}
+.oculto{display:none !important}
+
+/* ---------- controles ---------- */
+.campos{display:flex;gap:10px;flex-wrap:wrap}
+.campo{flex:1 1 180px;min-width:0}
+label.et{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--suave);font-weight:700;margin-bottom:4px}
+select,input[type=date],input[type=text],input[type=number]{
+  width:100%;padding:11px 12px;border:1.5px solid var(--borde);border-radius:10px;
+  background:#fff;min-height:46px
+}
+select:focus,input:focus{outline:2px solid var(--acento);outline-offset:1px;border-color:var(--acento)}
+
+/* ---------- toma de lista ---------- */
+.resumen{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.chip{padding:6px 12px;border-radius:999px;font-size:.85rem;font-weight:700}
+.chip.p{background:var(--p-bg);color:#065f46}
+.chip.t{background:var(--t-bg);color:#92400e}
+.chip.a{background:var(--a-bg);color:#991b1b}
+.chip.j{background:var(--j-bg);color:#1e40af}
+.chip.n{background:#e2e8f0;color:#475569}
+
+.fila{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--borde)}
+.fila:last-child{border-bottom:0}
+.fila .nom{flex:1;min-width:0;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.fila .nom small{display:block;font-weight:500;color:var(--suave);font-size:.75rem}
+.estados{display:flex;gap:5px;flex-shrink:0}
+.estados button{
+  width:44px;height:44px;border-radius:11px;font-weight:800;font-size:.95rem;
+  background:#f1f5f9;color:#94a3b8;border:1.5px solid transparent;transition:transform .06s
+}
+.estados button:active{transform:scale(.93)}
+.estados button[aria-pressed="true"][data-e="0"]{background:var(--p);color:#fff}
+.estados button[aria-pressed="true"][data-e="1"]{background:var(--t);color:#fff}
+.estados button[aria-pressed="true"][data-e="2"]{background:var(--a);color:#fff}
+.estados button[aria-pressed="true"][data-e="3"]{background:var(--j);color:#fff}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 18px;border-radius:12px;font-weight:700;background:var(--acento);color:#fff;
+  min-height:48px}
+.btn.sec{background:#e2e8f0;color:#334155}
+.btn.peligro{background:#dc2626;color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.guardar-fijo{position:sticky;bottom:0;background:linear-gradient(transparent,var(--fondo) 32%);
+  padding:14px 0 calc(10px + env(safe-area-inset-bottom));margin-top:8px}
+.guardar-fijo .btn{width:100%;font-size:1.05rem}
+
+/* ---------- avisos ---------- */
+.aviso{padding:10px 12px;border-radius:10px;font-size:.87rem;margin:10px 0}
+.aviso.ok{background:var(--p-bg);color:#065f46}
+.aviso.info{background:#e0f2fe;color:#075985}
+.aviso.alerta{background:var(--t-bg);color:#92400e}
+.aviso.mal{background:var(--a-bg);color:#991b1b}
+
+/* ---------- informes ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0}
+.kpi{background:#f8fafc;border:1px solid var(--borde);border-radius:12px;padding:11px 12px}
+.kpi .v{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.kpi .e{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);font-weight:700;margin-top:3px}
+.kpi.p .v{color:var(--p)} .kpi.t .v{color:var(--t)}
+.kpi.a .v{color:var(--a)} .kpi.j .v{color:var(--j)}
+
+.tabla-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--borde);white-space:nowrap}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);
+  font-weight:700;background:#f8fafc;position:sticky;top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.riesgo td{background:#fff5f5}
+/* el nombre puede envolver, pero nunca partirse al medio de una palabra */
+td .nombre-alumno{white-space:normal;overflow-wrap:break-word;word-break:normal}
+td.col-nombre{min-width:150px}
+
+.barra{height:9px;border-radius:5px;background:#e2e8f0;overflow:hidden;min-width:70px}
+.barra i{display:block;height:100%;border-radius:5px;background:var(--p)}
+.barra i.bajo{background:var(--a)}
+.barra i.medio{background:var(--t)}
+
+.franja{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:.87rem}
+.franja .et2{width:88px;flex-shrink:0;color:var(--suave);font-weight:600;font-size:.8rem}
+.franja .b{flex:1;height:20px;background:#f1f5f9;border-radius:5px;overflow:hidden}
+.franja .b i{display:block;height:100%;background:var(--acento)}
+.franja .c{width:74px;flex-shrink:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+
+.lista-fechas{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{padding:5px 10px;border-radius:8px;font-size:.8rem;background:#f1f5f9;
+  font-variant-numeric:tabular-nums}
+.pill.a{background:var(--a-bg);color:#991b1b;font-weight:600}
+.pill.t{background:var(--t-bg);color:#92400e;font-weight:600}
+.pill.j{background:var(--j-bg);color:#1e40af;font-weight:600}
+
+/* ---------- corregir alumnos ---------- */
+.gfila{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap}
+.gfila:last-child{border-bottom:0}
+.gfila .gnom{flex:1 1 140px;min-width:0;font-weight:600;font-size:.9rem;overflow-wrap:break-word}
+.gfila .gnom small{display:block;font-weight:500;color:var(--suave);font-size:.74rem}
+.gacc{display:flex;gap:5px;flex-shrink:0}
+.gacc button{padding:8px 11px;border-radius:9px;background:#f1f5f9;color:#475569;
+  font-size:.8rem;font-weight:700;min-height:40px}
+.gacc button.mal{background:var(--a-bg);color:#991b1b}
+.gedit{flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap;padding:8px 0 4px}
+.gedit input,.gedit select{flex:1 1 160px;min-height:42px}
+.gedit button{padding:10px 14px;border-radius:9px;font-weight:700;background:var(--acento);color:#fff}
+.gedit button.sec{background:#e2e8f0;color:#334155}
+.gedit button.mal{background:#dc2626;color:#fff}
+
+.sep{height:1px;background:var(--borde);margin:16px 0}
+.nota-pie{font-size:.78rem;color:var(--suave);margin-top:6px}
+.reservado{border:1.5px dashed var(--borde);border-radius:12px;padding:16px;
+  color:var(--suave);font-size:.85rem;text-align:center}
+
+/* ---------- pantalla de desbloqueo ---------- */
+.candado{position:fixed;inset:0;z-index:200;background:var(--acento);
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.candado-caja{background:var(--panel);border-radius:18px;padding:26px 22px;
+  max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.candado-icono{font-size:2.4rem;line-height:1;margin-bottom:6px}
+.candado-caja h1{margin-bottom:10px}
+.candado-texto{color:var(--suave);font-size:.9rem;margin:0 0 18px}
+.candado-caja input{margin-bottom:10px;text-align:center;font-size:1.05rem}
+.candado-caja .btn{width:100%}
+.candado-caja .btn.sec{margin-top:14px;font-size:.85rem;min-height:40px;padding:8px 12px}
+.candado-caja .nota-pie{margin-top:16px;text-align:left}
+
+/* ---------- celular ----------
+   En pantalla angosta el nombre del alumno es lo que más se aprieta: se recorta
+   todo lo que rodea a la fila para devolverle ancho, sin bajar los botones de
+   estado de 42px, que es lo mínimo para tocar con el dedo estando parado. */
+@media (max-width:430px){
+  main{padding:8px}
+  .panel{padding:10px;border-radius:12px;margin-bottom:10px}
+  header{padding-left:10px;padding-right:10px}
+  .fila{padding:7px 0;gap:8px}
+  .fila .nom{font-size:.92rem;line-height:1.3}
+  .fila .nom small{font-size:.72rem}
+  .estados{gap:4px}
+  .estados button{width:42px;height:42px;border-radius:10px}
+  .resumen{gap:6px;margin:10px 0 2px}
+  .chip{padding:5px 9px;font-size:.78rem}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+  .kpi{padding:9px 10px}
+  .kpi .v{font-size:1.3rem}
+  .kpi .e{font-size:.66rem}
+  .franja .et2{width:66px;font-size:.74rem}
+  .franja .c{width:62px;font-size:.82rem}
+  h1{font-size:1.15rem}
+  .acciones{gap:8px}
+  .btn{padding:12px 14px;flex:1 1 auto}
+  table{font-size:.82rem}
+  th,td{padding:7px 8px}
+}
+@media (max-width:340px){
+  .estados button{width:38px;height:42px;font-size:.9rem}
+  .fila .nom{font-size:.88rem}
+}
+
+/* ---------- impresión ---------- */
+@media print{
+  @page{margin:12mm}
+  header,nav,.no-print,.guardar-fijo,.acciones{display:none !important}
+  body{background:#fff;font-size:11pt}
+  main{max-width:none;padding:0}
+  .panel{box-shadow:none;border:1px solid #cbd5e1;page-break-inside:avoid;margin-bottom:10px}
+  .kpi{border:1px solid #cbd5e1}
+  th{background:#f1f5f9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .chip,.pill,.barra i,.franja .b i,.kpi .v{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tabla-wrap{overflow:visible}
+  table{font-size:9.5pt}
+  .solo-print{display:block !important}
+}
+.solo-print{display:none}
+</style>
+</head>
+<body>
+
+<div id="candado" class="candado oculto">
+  <div class="candado-caja">
+    <div class="candado-icono">🔒</div>
+    <h1>Asistencia 2026</h1>
+    <p class="candado-texto">Escribí tu contraseña para cargar los cursos en este dispositivo.
+      Se hace <strong>una sola vez</strong>: después abre directo, incluso sin señal.</p>
+    <input type="password" id="clave" autocomplete="current-password"
+           placeholder="Contraseña" enterkeyhint="go">
+    <button class="btn" id="btnAbrir">Abrir</button>
+    <div id="avisoClave"></div>
+    <p class="nota-pie">Si no la tenés a mano, podés cargar los datos desde el archivo de
+      copia de seguridad: cerrá esta pantalla y andá a <strong>Datos → Restaurar desde copia</strong>.</p>
+    <button class="btn sec" id="btnSaltearClave">Entrar sin cargar nada</button>
+  </div>
+</div>
+
+<header>
+  <div class="barra-sup">
+    <span class="titulo">Asistencia 2026 <small id="sello"></small></span>
+    <span id="estadoGuardado" style="font-size:.78rem;opacity:.85"></span>
+  </div>
+  <nav id="nav">
+    <button data-v="lista" aria-current="true">Tomar lista</button>
+    <button data-v="alumno">Informe alumno</button>
+    <button data-v="curso">Informe curso</button>
+    <button data-v="datos">Datos</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ TOMAR LISTA ============ -->
+<section id="v-lista">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="selCurso">Curso</label>
+        <select id="selCurso"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="selFecha">Fecha de la clase</label>
+        <input type="date" id="selFecha">
+      </div>
+    </div>
+    <div class="resumen" id="resumenLista"></div>
+    <div id="avisoLista"></div>
+  </div>
+
+  <div class="panel" id="panelLista">
+    <div id="listaAlumnos"></div>
+    <div class="acciones no-print">
+      <button class="btn sec" id="btnTodosPresentes">Todos presentes</button>
+      <button class="btn sec" id="btnBorrarJornada">Borrar esta jornada</button>
+    </div>
+  </div>
+
+  <div class="guardar-fijo no-print">
+    <button class="btn" id="btnGuardar">Guardar asistencia</button>
+  </div>
+</section>
+
+<!-- ============ INFORME ALUMNO ============ -->
+<section id="v-alumno" class="oculto">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="selCursoAl">Curso</label>
+        <select id="selCursoAl"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="selAlumno">Alumno</label>
+        <select id="selAlumno"></select>
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnImprimirAlumno">Imprimir / Guardar PDF</button>
+    </div>
+  </div>
+  <div id="fichaAlumno"></div>
+</section>
+
+<!-- ============ INFORME CURSO ============ -->
+<section id="v-curso" class="oculto">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="selCursoRep">Curso</label>
+        <select id="selCursoRep"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="inpUmbral">Umbral de riesgo (%)</label>
+        <input type="number" id="inpUmbral" min="1" max="100" step="1">
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnImprimirCurso">Imprimir / Guardar PDF</button>
+    </div>
+  </div>
+  <div id="fichaCurso"></div>
+</section>
+
+<!-- ============ DATOS ============ -->
+<section id="v-datos" class="oculto">
+  <div class="panel">
+    <h2>Copia de seguridad</h2>
+    <p class="nota-pie">Los datos viven solo en este dispositivo, en el navegador. Si limpiás el
+      almacenamiento se borran. Descargá una copia cada tanto y guardala donde quieras.</p>
+    <div class="acciones">
+      <button class="btn" id="btnBackup">Descargar copia de seguridad</button>
+      <button class="btn sec" id="btnRestaurar">Restaurar desde copia</button>
+      <input type="file" id="fileRestaurar" accept="application/json,.json" class="oculto">
+    </div>
+  </div>
+
+  <div class="panel" id="panelNube">
+    <h2>Sincronización entre dispositivos</h2>
+    <p class="nota-pie">La PC, la netbook y el celular se mantienen al día solos.
+      Lo que viaja está cifrado: el servidor guarda y reparte, pero no puede leer
+      ni un nombre. Si no hay señal no pasa nada: se guarda acá y sube después.</p>
+    <div id="estadoNube"></div>
+    <div class="acciones">
+      <button class="btn" id="btnSincronizar">Sincronizar ahora</button>
+      <button class="btn sec" id="btnSubirTodo">Subir todo de nuevo</button>
+      <button class="btn sec" id="btnEnlace">Copiar enlace para otro dispositivo</button>
+    </div>
+    <div id="avisoNube"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Combinar con el otro dispositivo</h2>
+    <p class="nota-pie">Si tomás lista en el celular y en la netbook, esto une las dos.
+      A diferencia de restaurar, <strong>no borra nada</strong>: suma las jornadas que faltan
+      y, si la misma jornada está en las dos, se queda con la que cargaste último.</p>
+    <div class="acciones">
+      <button class="btn" id="btnCombinar">Combinar con una copia del otro dispositivo</button>
+      <input type="file" id="fileCombinar" accept="application/json,.json" class="oculto">
+    </div>
+    <div id="avisoCombinar"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Exportar</h2>
+    <div class="acciones">
+      <button class="btn sec" id="btnCsvRegistros">Registros (CSV para Excel)</button>
+      <button class="btn sec" id="btnCsvResumen">Resumen por alumno (CSV)</button>
+      <button class="btn sec" id="btnCsvCursos">Resumen por curso (CSV)</button>
+    </div>
+    <p class="nota-pie">Los CSV usan punto y coma y codificación UTF-8 con BOM: se abren directo en Excel.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Configuración</h2>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="cfgUmbral">Umbral por defecto (%)</label>
+        <input type="number" id="cfgUmbral" min="1" max="100" step="1">
+      </div>
+      <div class="campo">
+        <label class="et" for="cfgJustificados">Los justificados</label>
+        <select id="cfgJustificados">
+          <option value="1">Descuentan del porcentaje</option>
+          <option value="0">No se cuentan (salen del total)</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label class="et" for="cfgRacha">Alerta por inasistencias seguidas</label>
+        <input type="number" id="cfgRacha" min="2" max="10" step="1">
+      </div>
+    </div>
+    <p class="nota-pie">Las llegadas tarde siempre cuentan como presente para el porcentaje y se
+      muestran por separado. El umbral de cada curso se cambia desde el informe por curso.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Alumnos y cursos</h2>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="nuevoAlumnoCurso">Agregar alumno al curso</label>
+        <select id="nuevoAlumnoCurso"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="nuevoAlumnoNombre">Nombre</label>
+        <input type="text" id="nuevoAlumnoNombre" placeholder="APELLIDO, Nombre">
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnAgregarAlumno">Agregar alumno</button>
+    </div>
+    <div class="sep"></div>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="nuevoCurso">Agregar curso</label>
+        <input type="text" id="nuevoCurso" placeholder="EES 99 4to 1ra">
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnAgregarCurso">Agregar curso</button>
+    </div>
+    <div id="avisoDatos"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Corregir alumnos</h2>
+    <p class="nota-pie">Para arreglar un apellido mal escrito, unir dos fichas que son la misma
+      persona, o sacar a alguien que no va más. Al unir, las clases de los dos se juntan en una
+      sola ficha.</p>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="gestCurso">Curso</label>
+        <select id="gestCurso"></select>
+      </div>
+    </div>
+    <div id="listaGestion"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Estado actual</h2>
+    <div id="estadoDatos"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Zona de riesgo</h2>
+    <p class="nota-pie">Vuelve todo al estado original de la migración. Descargá una copia antes.</p>
+    <div class="acciones">
+      <button class="btn peligro" id="btnReset">Restaurar datos de la migración</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+
+/* ==================================================================
+   DATOS SEMILLA — generados por generar_app.py desde datos_asistencia.json
+   Formato compacto:
+     c: [[idCurso, etiqueta, umbral], ...]
+     a: [[idAlumno, nombre, indiceCurso, alta, alias?], ...]
+     f: ["AAAA-MM-DD", ...]
+     r: [[indiceFecha, indiceAlumno, estado, inferido], ...]
+   estado: 0 Presente · 1 Tarde · 2 Ausente · 3 Justificado
+   ================================================================== */
+const SEMILLA = {"umbral":75,"c":[],"a":[],"f":[],"r":[]};
+
+/* Version publicada: los datos van adentro del archivo pero cifrados con la
+   contrasena del docente (AES-256-GCM, clave derivada con PBKDF2). Sin esa
+   contrasena esto es ruido. En el archivo local vale null: ahi no hace falta. */
+const CIFRADO = null;
+
+/* Datos del servidor de sincronizacion. En el archivo local vienen completos;
+   en la version publicada, el secreto y la clave de cifrado viajan adentro del
+   bloque cifrado, asi que la URL publica no alcanza para tocar nada. */
+const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
+
+/* Sello de esta version, para saber si un dispositivo esta al dia. */
+const VERSION = "02/08 21:07";
+
+const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
+const SIGLAS  = ["P", "T", "A", "J"];
+const CLAVE_LS = "asistencia2026";
+
+/* ---------------- utilidades ---------------- */
+const $ = (s) => document.querySelector(s);
+const crear = (t, p = {}) => Object.assign(document.createElement(t), p);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function hoyISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function fechaCorta(iso) {
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}`;
+}
+function fechaLarga(iso) {
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+}
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+function mesEtiqueta(ym) {
+  const [a, m] = ym.split("-");
+  return `${MESES[+m - 1]} ${a}`;
+}
+function pct(n, d) { return d > 0 ? (100 * n) / d : null; }
+function fmtPct(v) { return v === null ? "—" : `${v.toFixed(1)}%`; }
+function diasEntre(a, b) {
+  return Math.round((new Date(b + "T00:00") - new Date(a + "T00:00")) / 86400000);
+}
+
+/* ---------------- estado ---------------- */
+let D = null;   // {cursos, alumnos, registros, inferidos, config}
+
+function desdeSemilla(S) {
+  S = S || SEMILLA;
+  const cursos = S.c.map(([id, etiqueta, umbral]) => ({ id, etiqueta, umbral }));
+  const alumnos = S.a.map(([id, nombre, ci, alta, alias]) => ({
+    id, nombre, curso: cursos[ci].id, alta, alias: alias || [], activo: true,
+  }));
+  const registros = {};
+  const inferidos = {};
+  for (const [fi, ai, e, inf] of S.r) {
+    const f = S.f[fi], id = alumnos[ai].id;
+    (registros[f] || (registros[f] = {}))[id] = e;
+    if (inf) (inferidos[f] || (inferidos[f] = {}))[id] = 1;
+  }
+  return {
+    cursos, alumnos, registros, inferidos, editado: {}, sync: {}, bajas: {},
+    config: { umbral: S.umbral || 75, justificadosDescuentan: 1, racha: 3 },
+  };
+}
+
+/* ---------------- desbloqueo de la version publicada ---------------- */
+
+const deB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+/** Deriva la clave y descifra. Tira error si la contraseña no es la correcta:
+ *  AES-GCM verifica la integridad, no hay forma de que "casi" funcione. */
+async function descifrar(clave) {
+  const material = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
+  const llave = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: deB64(CIFRADO.sal), iterations: CIFRADO.vueltas, hash: "SHA-256" },
+    material, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const plano = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: deB64(CIFRADO.iv) }, llave, deB64(CIFRADO.datos));
+  return JSON.parse(new TextDecoder().decode(plano));
+}
+
+function mostrarCandado(ver) {
+  document.getElementById("candado").classList.toggle("oculto", !ver);
+}
+
+/** Credenciales que llegan en el enlace personal, después del #.
+ *
+ *  Lo que va después del # NO viaja al servidor: no queda en los registros de
+ *  Netlify ni de nadie. Por eso la llave puede ir ahí y no dentro de la página,
+ *  que se la baja cualquiera. Al usarla se borra de la barra de direcciones y
+ *  queda guardada en el dispositivo.
+ */
+function credencialesDelEnlace() {
+  const h = location.hash || "";
+  const m = h.match(/[#&]c=([A-Za-z0-9_\-]+)/);
+  if (!m) return null;
+  try {
+    const json = atob(m[1].replace(/-/g, "+").replace(/_/g, "/"));
+    const o = JSON.parse(decodeURIComponent(escape(json)));
+    if (!o.s || !o.k) return null;
+    return { secreto: o.s, clave: o.k };
+  } catch (e) { return null; }
+}
+
+function limpiarEnlace() {
+  const borrar = () => {
+    if (location.hash) {
+      try { history.replaceState(null, "", location.pathname + location.search); }
+      catch (e) { /* nada que hacer, no es grave */ }
+    }
+  };
+  // se hace al terminar de cargar: si se pide mientras la página todavía está
+  // navegando, algunos navegadores vuelven a poner la dirección original
+  borrar();
+  if (document.readyState !== "complete") window.addEventListener("load", borrar);
+  setTimeout(borrar, 400);
+}
+
+async function abrirConClave() {
+  const inp = $("#clave"), btn = $("#btnAbrir");
+  const clave = inp.value;
+  if (!clave) { alerta("#avisoClave", "Escribí la contraseña.", "mal"); return; }
+  btn.disabled = true;
+  btn.textContent = "Abriendo…";
+  $("#avisoClave").innerHTML = "";
+  // un respiro para que el navegador pinte el "Abriendo…" antes de trabarse
+  // ~1 segundo derivando la clave
+  await new Promise((r) => setTimeout(r, 30));
+  try {
+    const paquete = await descifrar(clave);
+    // El bloque cifrado trae los datos y, adentro, las credenciales de
+    // sincronización: por eso alcanza con la contraseña para dejar el
+    // dispositivo funcionando y conectado.
+    const semilla = paquete.semilla || paquete;
+    D = desdeSemilla(semilla);
+    if (paquete.sync) D.sync = Object.assign({}, D.sync, paquete.sync);
+    guardar(); reindexar(); refrescarSelects(); cargarBorrador();
+    inp.value = "";
+    mostrarCandado(false);
+    marcarGuardado("Datos cargados en este dispositivo");
+    sincronizarDespues();
+  } catch (e) {
+    alerta("#avisoClave", "Esa contraseña no es. Fijate mayúsculas y espacios.", "mal");
+    inp.select();
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Abrir";
+  }
+}
+
+/** Marca de tiempo de la última vez que se tocó una jornada. Es lo que permite
+ *  combinar el celular con la netbook sin que una pise el trabajo de la otra. */
+function claveEdicion(cursoId, fecha) { return cursoId + "|" + fecha; }
+function marcarEdicion(cursoId, fecha) {
+  D.editado[claveEdicion(cursoId, fecha)] = new Date().toISOString();
+}
+/** El padrón (cursos, alumnos y configuración) viaja como un bloque más. */
+function marcarPadron() {
+  D.editado["__padron__"] = new Date().toISOString();
+  if (typeof sincronizarDespues === "function") sincronizarDespues();
+}
+
+function cargar() {
+  try {
+    const crudo = localStorage.getItem(CLAVE_LS);
+    if (crudo) {
+      const d = JSON.parse(crudo);
+      if (d && d.alumnos && d.cursos) {
+        d.inferidos = d.inferidos || {};
+        d.editado = d.editado || {};
+        d.sync = d.sync || {};
+        d.bajas = d.bajas || {};
+        d.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3 }, d.config || {});
+        return d;
+      }
+    }
+  } catch (e) { /* si el guardado está corrupto, arrancamos de la semilla */ }
+  return desdeSemilla();
+}
+
+let guardadoPendiente = null;
+function guardar() {
+  clearTimeout(guardadoPendiente);
+  guardadoPendiente = setTimeout(() => {
+    try {
+      localStorage.setItem(CLAVE_LS, JSON.stringify(D));
+      marcarGuardado("Guardado en este dispositivo");
+    } catch (e) {
+      marcarGuardado("No se pudo guardar: almacenamiento lleno", true);
+    }
+  }, 120);
+}
+function marcarGuardado(txt, mal) {
+  const el = $("#estadoGuardado");
+  el.textContent = txt;
+  el.style.color = mal ? "#fecaca" : "";
+  clearTimeout(marcarGuardado._t);
+  marcarGuardado._t = setTimeout(() => { el.textContent = ""; }, 2600);
+}
+
+/* ---------------- índices y cálculo ---------------- */
+let IDX = null;
+function reindexar() {
+  const porCurso = {}, alumnoPorId = {}, cursoPorId = {};
+  for (const c of D.cursos) { cursoPorId[c.id] = c; porCurso[c.id] = []; }
+  for (const a of D.alumnos) {
+    alumnoPorId[a.id] = a;
+    if (porCurso[a.curso]) porCurso[a.curso].push(a);
+  }
+  for (const id in porCurso) {
+    porCurso[id].sort((x, y) => x.nombre.localeCompare(y.nombre, "es"));
+  }
+  // jornadas por curso = fechas con al menos un registro de un alumno de ese curso
+  const jornadas = {};
+  for (const id in porCurso) jornadas[id] = [];
+  for (const f in D.registros) {
+    const vistos = new Set();
+    for (const aid in D.registros[f]) {
+      const al = alumnoPorId[aid];
+      if (al && !vistos.has(al.curso)) { vistos.add(al.curso); }
+    }
+    for (const c of vistos) if (jornadas[c]) jornadas[c].push(f);
+  }
+  for (const id in jornadas) jornadas[id].sort();
+  IDX = { porCurso, alumnoPorId, cursoPorId, jornadas };
+}
+
+/** Estadísticas de un alumno. El porcentaje se mide desde su fecha de alta:
+ *  un alumno que se incorporó en mayo no se compara contra las clases de marzo. */
+function statsAlumno(al) {
+  const jorn = IDX.jornadas[al.curso] || [];
+  const alta = al.alta || (jorn.length ? jorn[0] : null);
+  const medidas = jorn.filter((f) => !alta || f >= alta);
+  const cuenta = [0, 0, 0, 0];
+  const detalle = [];
+  let inferidas = 0;
+  for (const f of medidas) {
+    const e = (D.registros[f] || {})[al.id];
+    if (e === undefined) continue;
+    cuenta[e]++;
+    if (e !== 0) detalle.push({ fecha: f, estado: e });
+    if ((D.inferidos[f] || {})[al.id]) inferidas++;
+  }
+  const conRegistro = cuenta[0] + cuenta[1] + cuenta[2] + cuenta[3];
+  const presentes = cuenta[0] + cuenta[1];
+  const base = D.config.justificadosDescuentan ? conRegistro : conRegistro - cuenta[3];
+  const porcentaje = pct(presentes, base);
+
+  // racha de inasistencias consecutivas (ausente o justificado)
+  let rachaMax = 0, rachaActual = 0, corriendo = 0;
+  for (const f of medidas) {
+    const e = (D.registros[f] || {})[al.id];
+    if (e === 2 || e === 3) { corriendo++; rachaMax = Math.max(rachaMax, corriendo); }
+    else if (e !== undefined) corriendo = 0;
+  }
+  rachaActual = corriendo;
+
+  // último mes: las clases de los últimos 30 días con clase del curso
+  let ultimoMes = null;
+  if (medidas.length) {
+    const fin = jorn[jorn.length - 1];
+    const recientes = medidas.filter((f) => diasEntre(f, fin) <= 30);
+    let p = 0, b = 0;
+    for (const f of recientes) {
+      const e = (D.registros[f] || {})[al.id];
+      if (e === undefined) continue;
+      if (!D.config.justificadosDescuentan && e === 3) continue;
+      b++; if (e === 0 || e === 1) p++;
+    }
+    if (b > 0) ultimoMes = { pct: pct(p, b), clases: b };
+  }
+
+  // evolución mensual
+  const meses = {};
+  for (const f of medidas) {
+    const e = (D.registros[f] || {})[al.id];
+    if (e === undefined) continue;
+    const ym = f.slice(0, 7);
+    const m = meses[ym] || (meses[ym] = { p: 0, b: 0 });
+    if (!D.config.justificadosDescuentan && e === 3) continue;
+    m.b++; if (e === 0 || e === 1) m.p++;
+  }
+
+  return {
+    alumno: al, jornadasCurso: jorn.length, medidas: medidas.length, conRegistro,
+    alta, presentes: cuenta[0], tardes: cuenta[1], ausentes: cuenta[2], justificados: cuenta[3],
+    asistidas: presentes, porcentaje, rachaMax, rachaActual, ultimoMes, detalle, meses,
+    inferidas, incorporacionTardia: !!(alta && jorn.length && alta > jorn[0]),
+  };
+}
+
+function statsCurso(c) {
+  const alumnos = (IDX.porCurso[c.id] || []).filter((a) => a.activo !== false);
+  const jorn = IDX.jornadas[c.id] || [];
+  const filas = alumnos.map(statsAlumno);
+  const conDatos = filas.filter((s) => s.conRegistro > 0 && s.porcentaje !== null);
+  const promedio = conDatos.length
+    ? conDatos.reduce((t, s) => t + s.porcentaje, 0) / conDatos.length : null;
+
+  // asistencia por fecha
+  const porFecha = jorn.map((f) => {
+    let p = 0, t = 0, a = 0, j = 0;
+    for (const al of alumnos) {
+      const e = (D.registros[f] || {})[al.id];
+      if (e === undefined) continue;
+      if (e === 0) p++; else if (e === 1) t++; else if (e === 2) a++; else j++;
+    }
+    const tot = p + t + a + j;
+    return { fecha: f, p, t, a, j, total: tot, pct: pct(p + t, tot) };
+  });
+
+  // evolución mensual del curso
+  const meses = {};
+  for (const f of porFecha) {
+    const ym = f.fecha.slice(0, 7);
+    const m = meses[ym] || (meses[ym] = { p: 0, b: 0, clases: 0 });
+    m.p += f.p + f.t; m.b += f.total; m.clases++;
+  }
+
+  const franjas = [
+    { et: "85 a 100%", min: 85, max: 101, n: 0 },
+    { et: "75 a 84%", min: 75, max: 85, n: 0 },
+    { et: "65 a 74%", min: 65, max: 75, n: 0 },
+    { et: "50 a 64%", min: 50, max: 65, n: 0 },
+    { et: "menos de 50%", min: -1, max: 50, n: 0 },
+  ];
+  for (const s of conDatos) {
+    for (const fr of franjas) if (s.porcentaje >= fr.min && s.porcentaje < fr.max) { fr.n++; break; }
+  }
+
+  const umbral = c.umbral ?? D.config.umbral;
+  const enRiesgo = conDatos.filter((s) => s.porcentaje < umbral);
+  const conRacha = filas.filter((s) => s.rachaActual >= D.config.racha);
+
+  return {
+    curso: c, alumnos, filas, conDatos, promedio, jornadas: jorn, porFecha, meses,
+    franjas, umbral, enRiesgo, conRacha,
+    rango: jorn.length ? [jorn[0], jorn[jorn.length - 1]] : null,
+  };
+}
+
+/* ---------------- navegación ---------------- */
+const VISTAS = ["lista", "alumno", "curso", "datos"];
+function mostrar(v) {
+  for (const x of VISTAS) $("#v-" + x).classList.toggle("oculto", x !== v);
+  for (const b of $("#nav").children) b.setAttribute("aria-current", String(b.dataset.v === v));
+  if (v === "alumno") pintarAlumno();
+  if (v === "curso") pintarCurso();
+  if (v === "datos") pintarDatos();
+}
+$("#nav").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-v]");
+  if (b) mostrar(b.dataset.v);
+});
+
+/* ---------------- selects ---------------- */
+function llenarSelectCursos(sel, valor) {
+  sel.innerHTML = "";
+  for (const c of D.cursos) {
+    sel.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
+  }
+  if (valor && D.cursos.some((c) => c.id === valor)) sel.value = valor;
+}
+
+/* ================= VISTA: TOMAR LISTA ================= */
+let borrador = {};        // alumnoId -> estado, de la jornada en edición
+let jornadaCargada = "";  // "curso|fecha" del borrador actual
+
+function claveJornada() { return `${$("#selCurso").value}|${$("#selFecha").value}`; }
+
+function cargarBorrador() {
+  const cid = $("#selCurso").value, f = $("#selFecha").value;
+  jornadaCargada = `${cid}|${f}`;
+  borrador = {};
+  const alumnos = IDX.porCurso[cid] || [];
+  const existentes = D.registros[f] || {};
+  for (const a of alumnos) {
+    borrador[a.id] = existentes[a.id] !== undefined ? existentes[a.id] : 0;
+  }
+  pintarLista();
+}
+
+function pintarLista() {
+  const cid = $("#selCurso").value, f = $("#selFecha").value;
+  const alumnos = (IDX.porCurso[cid] || []).filter((a) => a.activo !== false);
+  const cont = $("#listaAlumnos");
+  cont.innerHTML = "";
+
+  if (!D.cursos.length) {
+    cont.innerHTML = CIFRADO
+      ? `<p class="aviso info"><strong>Todavía no cargaste los datos en este dispositivo.</strong><br>
+          <button class="btn" id="btnPedirClave" style="margin-top:8px">Escribir la contraseña</button></p>`
+      : `<p class="aviso info"><strong>Todavía no hay datos en este dispositivo.</strong><br>
+          Andá a <strong>Datos → Restaurar desde copia</strong> y elegí el archivo de copia de
+          seguridad que descargaste de la computadora.</p>`;
+    const b = document.getElementById("btnPedirClave");
+    if (b) b.addEventListener("click", () => {
+      mostrarCandado(true); setTimeout(() => $("#clave").focus(), 120);
+    });
+    $("#avisoLista").innerHTML = "";
+    pintarResumen([]); return;
+  }
+  if (!alumnos.length) {
+    cont.innerHTML = `<p class="aviso info">Este curso no tiene alumnos todavía.
+      Agregalos desde la pestaña <strong>Datos</strong>.</p>`;
+    pintarResumen([]); return;
+  }
+
+  const yaExiste = !!(D.registros[f] && alumnos.some((a) => D.registros[f][a.id] !== undefined));
+  const avisos = [];
+  if (yaExiste) {
+    avisos.push(`<div class="aviso info">Esta jornada ya estaba cargada. Lo que guardes la reemplaza.</div>`);
+  }
+  const dow = new Date(f + "T00:00").getDay();
+  if (dow === 0 || dow === 6) {
+    avisos.push(`<div class="aviso alerta">Ojo: ${fechaLarga(f)} cae ${dow === 0 ? "domingo" : "sábado"}.</div>`);
+  }
+  $("#avisoLista").innerHTML = avisos.join("");
+
+  for (const a of alumnos) {
+    const st = statsAlumno(a);
+    const fila = crear("div", { className: "fila" });
+    const nuevo = st.conRegistro === 0;
+    const pctTxt = nuevo ? "sin clases medidas"
+      : `${fmtPct(st.porcentaje)} · ${st.asistidas}/${st.conRegistro} clases` +
+        (st.tardes ? ` · ${st.tardes} tarde${st.tardes > 1 ? "s" : ""}` : "");
+    fila.innerHTML =
+      `<div class="nom">${esc(a.nombre)}<small>${pctTxt}</small></div>`;
+    const grupo = crear("div", { className: "estados" });
+    for (let e = 0; e < 4; e++) {
+      const b = crear("button", { textContent: SIGLAS[e], title: ESTADOS[e] });
+      b.dataset.e = e; b.dataset.a = a.id;
+      b.setAttribute("aria-pressed", String(borrador[a.id] === e));
+      b.setAttribute("aria-label", `${a.nombre}: ${ESTADOS[e]}`);
+      grupo.appendChild(b);
+    }
+    fila.appendChild(grupo);
+    cont.appendChild(fila);
+  }
+  pintarResumen(alumnos);
+}
+
+function pintarResumen(alumnos) {
+  const c = [0, 0, 0, 0];
+  for (const a of alumnos) { const e = borrador[a.id]; if (e !== undefined) c[e]++; }
+  $("#resumenLista").innerHTML =
+    `<span class="chip p">${c[0]} presentes</span>` +
+    `<span class="chip t">${c[1]} tarde</span>` +
+    `<span class="chip a">${c[2]} ausentes</span>` +
+    `<span class="chip j">${c[3]} justificados</span>` +
+    `<span class="chip n">${alumnos.length} en total</span>`;
+}
+
+$("#listaAlumnos").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-e]");
+  if (!b) return;
+  borrador[b.dataset.a] = +b.dataset.e;
+  for (const h of b.parentElement.children) {
+    h.setAttribute("aria-pressed", String(h === b));
+  }
+  pintarResumen((IDX.porCurso[$("#selCurso").value] || []).filter((a) => a.activo !== false));
+});
+
+$("#btnTodosPresentes").addEventListener("click", () => {
+  for (const k in borrador) borrador[k] = 0;
+  pintarLista();
+});
+
+$("#btnGuardar").addEventListener("click", () => {
+  const cid = $("#selCurso").value, f = $("#selFecha").value;
+  if (!f) { alerta("#avisoLista", "Elegí una fecha.", "mal"); return; }
+  const alumnos = (IDX.porCurso[cid] || []).filter((a) => a.activo !== false);
+  if (!alumnos.length) return;
+  const reg = D.registros[f] || (D.registros[f] = {});
+  for (const a of alumnos) {
+    reg[a.id] = borrador[a.id] ?? 0;
+    if (D.inferidos[f]) delete D.inferidos[f][a.id];   // ya no es inferida: la cargaste vos
+    if (!a.alta || f < a.alta) a.alta = f;
+  }
+  marcarEdicion(cid, f);
+  guardar(); reindexar(); pintarLista(); sincronizarDespues();
+  const c = [0, 0, 0, 0];
+  for (const a of alumnos) c[reg[a.id]]++;
+  alerta("#avisoLista",
+    `Guardado ${fechaLarga(f)}: ${c[0]} presentes, ${c[1]} tarde, ${c[2]} ausentes, ${c[3]} justificados.`,
+    "ok");
+});
+
+$("#btnBorrarJornada").addEventListener("click", () => {
+  const cid = $("#selCurso").value, f = $("#selFecha").value;
+  const alumnos = IDX.porCurso[cid] || [];
+  if (!D.registros[f]) { alerta("#avisoLista", "Esa fecha no tiene nada cargado.", "info"); return; }
+  if (!confirm(`¿Borrar la jornada del ${fechaLarga(f)} de ${IDX.cursoPorId[cid].etiqueta}?`)) return;
+  for (const a of alumnos) delete D.registros[f][a.id];
+  if (!Object.keys(D.registros[f]).length) delete D.registros[f];
+  marcarEdicion(cid, f);   // el borrado también es una edición: viaja en la combinación
+  guardar(); reindexar(); cargarBorrador(); sincronizarDespues();
+  alerta("#avisoLista", `Jornada del ${fechaLarga(f)} borrada.`, "ok");
+});
+
+function alerta(sel, txt, tipo) {
+  $(sel).innerHTML = `<div class="aviso ${tipo}">${esc(txt)}</div>`;
+}
+
+$("#selCurso").addEventListener("change", cargarBorrador);
+$("#selFecha").addEventListener("change", cargarBorrador);
+
+/* ================= VISTA: INFORME ALUMNO ================= */
+function llenarSelectAlumnos() {
+  const cid = $("#selCursoAl").value;
+  const sel = $("#selAlumno");
+  const previo = sel.value;
+  sel.innerHTML = "";
+  for (const a of (IDX.porCurso[cid] || [])) {
+    sel.appendChild(crear("option", { value: a.id, textContent: a.nombre }));
+  }
+  if (previo && [...sel.options].some((o) => o.value === previo)) sel.value = previo;
+}
+
+function pintarAlumno() {
+  const al = IDX.alumnoPorId[$("#selAlumno").value];
+  const cont = $("#fichaAlumno");
+  if (!al) { cont.innerHTML = `<div class="panel"><p class="aviso info">Elegí un alumno.</p></div>`; return; }
+
+  const s = statsAlumno(al);
+  const c = IDX.cursoPorId[al.curso];
+  const sc = statsCurso(c);
+  const umbral = c.umbral ?? D.config.umbral;
+  const dif = s.porcentaje !== null && sc.promedio !== null ? s.porcentaje - sc.promedio : null;
+
+  let h = `<div class="panel">
+    <h1>${esc(al.nombre)}</h1>
+    <p class="nota-pie" style="margin-top:-4px">${esc(c.etiqueta)} · informe de asistencia ·
+      generado el ${fechaLarga(hoyISO())}</p>`;
+
+  if (s.conRegistro === 0) {
+    h += `<p class="aviso info">Todavía no tiene ninguna clase registrada.</p></div>`;
+    cont.innerHTML = h; return;
+  }
+
+  h += `<div class="kpis">
+      <div class="kpi"><div class="v">${fmtPct(s.porcentaje)}</div><div class="e">Asistencia</div></div>
+      <div class="kpi"><div class="v">${s.conRegistro}</div><div class="e">Clases medidas</div></div>
+      <div class="kpi p"><div class="v">${s.asistidas}</div><div class="e">Asistidas</div></div>
+      <div class="kpi a"><div class="v">${s.ausentes}</div><div class="e">Ausentes</div></div>
+      <div class="kpi t"><div class="v">${s.tardes}</div><div class="e">Llegadas tarde</div></div>
+      <div class="kpi j"><div class="v">${s.justificados}</div><div class="e">Justificados</div></div>
+    </div>`;
+
+  h += `<div class="tabla-wrap"><table>
+    <tr><th>Concepto</th><th class="num">Cantidad</th><th class="num">Porcentaje</th></tr>
+    <tr><td>Presente</td><td class="num">${s.presentes}</td><td class="num">${fmtPct(pct(s.presentes, s.conRegistro))}</td></tr>
+    <tr><td>Llegó tarde <small style="color:var(--suave)">(cuenta como presente)</small></td>
+        <td class="num">${s.tardes}</td><td class="num">${fmtPct(pct(s.tardes, s.conRegistro))}</td></tr>
+    <tr><td>Ausente</td><td class="num">${s.ausentes}</td><td class="num">${fmtPct(pct(s.ausentes, s.conRegistro))}</td></tr>
+    <tr><td>Justificado</td><td class="num">${s.justificados}</td><td class="num">${fmtPct(pct(s.justificados, s.conRegistro))}</td></tr>
+    <tr><td><strong>Asistió (presente + tarde)</strong></td>
+        <td class="num"><strong>${s.asistidas}</strong></td>
+        <td class="num"><strong>${fmtPct(s.porcentaje)}</strong></td></tr>
+  </table></div>`;
+
+  h += `<div class="sep"></div><h3>Sobre qué se lo mide</h3>
+    <div class="tabla-wrap"><table>
+      <tr><td>Clases dictadas por el curso</td><td class="num">${s.jornadasCurso}</td></tr>
+      <tr><td>Clases sobre las que se lo mide</td><td class="num">${s.conRegistro}</td></tr>
+      <tr><td>Se incorporó el</td><td class="num">${s.alta ? fechaLarga(s.alta) : "—"}</td></tr>
+    </table></div>`;
+  if (s.incorporacionTardia) {
+    h += `<p class="aviso info">Se incorporó el ${fechaLarga(s.alta)}, después del inicio del curso.
+      El porcentaje se calcula solo sobre las ${s.conRegistro} clases posteriores a su incorporación,
+      no sobre las ${s.jornadasCurso} del curso.</p>`;
+  }
+  if (s.conRegistro < 4) {
+    h += `<p class="aviso alerta">Son pocas clases (${s.conRegistro}): el porcentaje todavía no es representativo.</p>`;
+  }
+  if (s.inferidas) {
+    h += `<p class="nota-pie">${s.inferidas} de estas ausencias vienen de jornadas que no llegaste a
+      cargar en el Excel viejo y se completaron en la migración.</p>`;
+  }
+  h += `</div>`;
+
+  /* comparación con el curso */
+  h += `<div class="panel"><h2>Comparación con el curso</h2>
+    <div class="tabla-wrap"><table>
+      <tr><th>&nbsp;</th><th class="num">Asistencia</th></tr>
+      <tr><td>${esc(al.nombre)}</td><td class="num"><strong>${fmtPct(s.porcentaje)}</strong></td></tr>
+      <tr><td>Promedio de ${esc(c.etiqueta)}</td><td class="num">${fmtPct(sc.promedio)}</td></tr>
+      <tr><td>Diferencia</td><td class="num" style="color:${dif === null ? "" : dif >= 0 ? "var(--p)" : "var(--a)"}">
+        <strong>${dif === null ? "—" : (dif >= 0 ? "+" : "") + dif.toFixed(1) + " puntos"}</strong></td></tr>
+      <tr><td>Umbral de riesgo del curso</td><td class="num">${umbral}%</td></tr>
+    </table></div>`;
+  if (s.porcentaje !== null && s.porcentaje < umbral) {
+    h += `<p class="aviso mal">Está por debajo del umbral del ${umbral}%.</p>`;
+  }
+  h += `</div>`;
+
+  /* señales de alerta */
+  h += `<div class="panel"><h2>Señales de alerta</h2>
+    <div class="kpis">
+      <div class="kpi ${s.rachaActual >= D.config.racha ? "a" : ""}">
+        <div class="v">${s.rachaActual}</div><div class="e">Faltas seguidas ahora</div></div>
+      <div class="kpi"><div class="v">${s.rachaMax}</div><div class="e">Racha más larga</div></div>
+      <div class="kpi"><div class="v">${s.ultimoMes ? fmtPct(s.ultimoMes.pct) : "—"}</div>
+        <div class="e">Último mes</div></div>
+      <div class="kpi"><div class="v">${fmtPct(s.porcentaje)}</div><div class="e">Todo el año</div></div>
+    </div>`;
+  if (s.rachaActual >= D.config.racha) {
+    h += `<p class="aviso mal">Lleva ${s.rachaActual} inasistencias seguidas. Es la señal temprana
+      de que se está desenganchando.</p>`;
+  }
+  if (s.ultimoMes && s.porcentaje !== null) {
+    const caida = s.porcentaje - s.ultimoMes.pct;
+    if (caida >= 15) {
+      h += `<p class="aviso mal">Viene empeorando: ${fmtPct(s.ultimoMes.pct)} en el último mes
+        (${s.ultimoMes.clases} clases) contra ${fmtPct(s.porcentaje)} en el año.
+        Son ${caida.toFixed(1)} puntos menos.</p>`;
+    } else if (caida <= -15) {
+      h += `<p class="aviso ok">Viene mejorando: ${fmtPct(s.ultimoMes.pct)} en el último mes
+        contra ${fmtPct(s.porcentaje)} en el año.</p>`;
+    }
+  }
+
+  /* evolución mensual */
+  const ms = Object.keys(s.meses).sort();
+  if (ms.length > 1) {
+    h += `<div class="sep"></div><h3>Mes a mes</h3>`;
+    for (const ym of ms) {
+      const m = s.meses[ym], v = pct(m.p, m.b);
+      h += franjaHTML(mesEtiqueta(ym), v, `${fmtPct(v)}`, `${m.p}/${m.b}`);
+    }
+  }
+  h += `</div>`;
+
+  /* detalle cronológico */
+  h += `<div class="panel"><h2>Detalle de faltas y llegadas tarde</h2>`;
+  if (!s.detalle.length) {
+    h += `<p class="aviso ok">No faltó ni llegó tarde en ninguna clase.</p>`;
+  } else {
+    h += `<div class="tabla-wrap"><table>
+      <tr><th>Fecha</th><th>Día</th><th>Estado</th></tr>`;
+    const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+    for (const d of s.detalle) {
+      const cls = d.estado === 1 ? "t" : d.estado === 2 ? "a" : "j";
+      h += `<tr><td>${fechaLarga(d.fecha)}</td>
+        <td>${DIAS[new Date(d.fecha + "T00:00").getDay()]}</td>
+        <td><span class="pill ${cls}">${ESTADOS[d.estado]}</span></td></tr>`;
+    }
+    h += `</table></div>`;
+  }
+  h += `</div>`;
+
+  /* espacio reservado para notas */
+  h += `<div class="panel"><h2>Calificaciones</h2>
+    <div class="reservado">Reservado para el seguimiento de notas.<br>
+      La nota final la vas a cargar vos a mano; el promedio calculado va al lado, solo como referencia.</div>
+  </div>`;
+
+  cont.innerHTML = h;
+}
+
+function franjaHTML(etiqueta, valor, texto, extra) {
+  const v = valor === null ? 0 : valor;
+  return `<div class="franja"><span class="et2">${esc(etiqueta)}</span>
+    <span class="b"><i style="width:${Math.max(0, Math.min(100, v))}%"></i></span>
+    <span class="c">${texto}${extra ? ` <small style="color:var(--suave);font-weight:500">${extra}</small>` : ""}</span></div>`;
+}
+
+$("#selCursoAl").addEventListener("change", () => { llenarSelectAlumnos(); pintarAlumno(); });
+$("#selAlumno").addEventListener("change", pintarAlumno);
+$("#btnImprimirAlumno").addEventListener("click", () => window.print());
+
+/* ================= VISTA: INFORME CURSO ================= */
+function pintarCurso() {
+  const c = IDX.cursoPorId[$("#selCursoRep").value];
+  const cont = $("#fichaCurso");
+  if (!c) { cont.innerHTML = ""; return; }
+  $("#inpUmbral").value = c.umbral ?? D.config.umbral;
+  const s = statsCurso(c);
+
+  let h = `<div class="panel">
+    <h1>${esc(c.etiqueta)}</h1>
+    <p class="nota-pie" style="margin-top:-4px">Informe del curso · generado el ${fechaLarga(hoyISO())}</p>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${s.alumnos.length}</div><div class="e">Alumnos</div></div>
+      <div class="kpi"><div class="v">${s.jornadas.length}</div><div class="e">Clases dictadas</div></div>
+      <div class="kpi"><div class="v">${fmtPct(s.promedio)}</div><div class="e">Promedio del curso</div></div>
+      <div class="kpi a"><div class="v">${s.enRiesgo.length}</div><div class="e">Bajo ${s.umbral}%</div></div>
+    </div>
+    <p class="nota-pie">${s.rango
+      ? `Del ${fechaLarga(s.rango[0])} al ${fechaLarga(s.rango[1])}.`
+      : "Sin clases registradas."}
+      Las llegadas tarde cuentan como presente. Cada alumno se mide desde que se incorporó.</p>
+  </div>`;
+
+  /* distribución */
+  h += `<div class="panel"><h2>Cómo se reparte el curso</h2>`;
+  const n = s.conDatos.length || 1;
+  for (const fr of s.franjas) {
+    h += franjaHTML(fr.et, (100 * fr.n) / n, `${fr.n}`, `alumno${fr.n === 1 ? "" : "s"}`);
+  }
+  h += `<p class="nota-pie">Sobre ${s.conDatos.length} alumnos con clases registradas.</p></div>`;
+
+  /* listado peor a mejor */
+  h += `<div class="panel"><h2>Alumnos, de peor a mejor asistencia</h2>
+    <div class="tabla-wrap"><table>
+      <tr><th>#</th><th>Alumno</th><th class="num">Asist.</th><th>&nbsp;</th>
+        <th class="num">Clases</th><th class="num">Asistió</th><th class="num">Faltó</th>
+        <th class="num">Tarde</th><th class="num">Just.</th><th class="num">Seguidas</th></tr>`;
+  const orden = [...s.filas].sort((x, y) => {
+    if (x.porcentaje === null) return 1;
+    if (y.porcentaje === null) return -1;
+    return x.porcentaje - y.porcentaje;
+  });
+  orden.forEach((st, i) => {
+    const bajo = st.porcentaje !== null && st.porcentaje < s.umbral;
+    const cls = st.porcentaje === null ? "" : st.porcentaje < s.umbral ? "bajo"
+      : st.porcentaje < s.umbral + 10 ? "medio" : "";
+    h += `<tr class="${bajo ? "riesgo" : ""}">
+      <td class="num">${i + 1}</td>
+      <td class="col-nombre"><span class="nombre-alumno">${esc(st.alumno.nombre)}</span>${st.incorporacionTardia
+        ? `<br><small style="color:var(--suave)">desde ${fechaCorta(st.alta)}</small>` : ""}</td>
+      <td class="num"><strong>${fmtPct(st.porcentaje)}</strong></td>
+      <td><span class="barra"><i class="${cls}" style="width:${st.porcentaje ?? 0}%"></i></span></td>
+      <td class="num">${st.conRegistro}</td>
+      <td class="num">${st.asistidas}</td>
+      <td class="num">${st.ausentes}</td>
+      <td class="num">${st.tardes || ""}</td>
+      <td class="num">${st.justificados || ""}</td>
+      <td class="num">${st.rachaActual >= D.config.racha
+        ? `<strong style="color:var(--a)">${st.rachaActual}</strong>` : (st.rachaActual || "")}</td>
+    </tr>`;
+  });
+  h += `</table></div></div>`;
+
+  /* alertas */
+  h += `<div class="panel"><h2>Alumnos en alerta</h2>`;
+  if (!s.enRiesgo.length && !s.conRacha.length) {
+    h += `<p class="aviso ok">Ningún alumno por debajo del ${s.umbral}% ni con
+      ${D.config.racha} faltas seguidas.</p>`;
+  } else {
+    if (s.enRiesgo.length) {
+      h += `<h3>Por debajo del ${s.umbral}%</h3><div class="lista-fechas">`;
+      for (const st of [...s.enRiesgo].sort((a, b) => a.porcentaje - b.porcentaje)) {
+        h += `<span class="pill a">${esc(st.alumno.nombre)} · ${fmtPct(st.porcentaje)}</span>`;
+      }
+      h += `</div>`;
+    }
+    if (s.conRacha.length) {
+      h += `<h3 style="margin-top:14px">Con ${D.config.racha} o más inasistencias seguidas</h3>
+        <div class="lista-fechas">`;
+      for (const st of [...s.conRacha].sort((a, b) => b.rachaActual - a.rachaActual)) {
+        h += `<span class="pill a">${esc(st.alumno.nombre)} · ${st.rachaActual} seguidas</span>`;
+      }
+      h += `</div>`;
+    }
+  }
+  h += `</div>`;
+
+  /* asistencia por fecha */
+  h += `<div class="panel"><h2>Asistencia por jornada</h2>
+    <p class="nota-pie">Si un día faltó casi todo el curso probablemente fue un paro o un feriado
+      cargado por error, no una falta masiva.</p>
+    <div class="tabla-wrap"><table>
+      <tr><th>Fecha</th><th class="num">Asistió</th><th class="num">%</th><th>&nbsp;</th>
+        <th class="num">Pres.</th><th class="num">Tarde</th><th class="num">Aus.</th>
+        <th class="num">Just.</th><th>Observación</th></tr>`;
+  for (const f of s.porFecha) {
+    const raro = f.pct !== null && f.pct < 50;
+    const parcial = f.total < s.alumnos.length * 0.5;
+    h += `<tr class="${raro ? "riesgo" : ""}">
+      <td>${fechaLarga(f.fecha)}</td>
+      <td class="num">${f.p + f.t}/${f.total}</td>
+      <td class="num"><strong>${fmtPct(f.pct)}</strong></td>
+      <td><span class="barra"><i class="${raro ? "bajo" : ""}" style="width:${f.pct ?? 0}%"></i></span></td>
+      <td class="num">${f.p}</td><td class="num">${f.t || ""}</td>
+      <td class="num">${f.a || ""}</td><td class="num">${f.j || ""}</td>
+      <td>${raro ? "<strong>¿paro o feriado?</strong>" : parcial ? "carga incompleta" : ""}</td>
+    </tr>`;
+  }
+  h += `</table></div></div>`;
+
+  /* evolución mensual */
+  const ms = Object.keys(s.meses).sort();
+  if (ms.length) {
+    h += `<div class="panel"><h2>Evolución mes a mes</h2>`;
+    for (const ym of ms) {
+      const m = s.meses[ym], v = pct(m.p, m.b);
+      h += franjaHTML(mesEtiqueta(ym), v, fmtPct(v), `${m.clases} clase${m.clases === 1 ? "" : "s"}`);
+    }
+    h += `</div>`;
+  }
+
+  cont.innerHTML = h;
+}
+
+$("#selCursoRep").addEventListener("change", pintarCurso);
+$("#inpUmbral").addEventListener("change", () => {
+  const c = IDX.cursoPorId[$("#selCursoRep").value];
+  const v = Math.max(1, Math.min(100, +$("#inpUmbral").value || D.config.umbral));
+  c.umbral = v; marcarPadron(); guardar(); pintarCurso();
+});
+$("#btnImprimirCurso").addEventListener("click", () => window.print());
+
+/* ================= VISTA: DATOS ================= */
+function pintarDatos() {
+  $("#cfgUmbral").value = D.config.umbral;
+  $("#cfgJustificados").value = String(D.config.justificadosDescuentan);
+  $("#cfgRacha").value = D.config.racha;
+  llenarSelectCursos($("#nuevoAlumnoCurso"), $("#nuevoAlumnoCurso").value);
+  pintarGestion();
+  pintarEstadoNube();
+
+  let regs = 0, inf = 0;
+  for (const f in D.registros) regs += Object.keys(D.registros[f]).length;
+  for (const f in D.inferidos) inf += Object.keys(D.inferidos[f]).length;
+  const jorn = Object.values(IDX.jornadas).reduce((t, v) => t + v.length, 0);
+  const fechas = Object.keys(D.registros).sort();
+
+  let h = `<div class="tabla-wrap"><table>
+    <tr><td>Versión de la app</td><td class="num"><strong>${VERSION}</strong></td></tr>
+    <tr><td>Cursos</td><td class="num">${D.cursos.length}</td></tr>
+    <tr><td>Alumnos</td><td class="num">${D.alumnos.length}</td></tr>
+    <tr><td>Clases dictadas (curso x fecha)</td><td class="num">${jorn}</td></tr>
+    <tr><td>Registros de asistencia</td><td class="num">${regs}</td></tr>
+    <tr><td>De ellos, inferidos en la migración</td><td class="num">${inf}</td></tr>
+    <tr><td>Rango de fechas</td><td class="num">${fechas.length
+      ? fechaLarga(fechas[0]) + " a " + fechaLarga(fechas[fechas.length - 1]) : "—"}</td></tr>
+    <tr><td>Bajas registradas</td><td class="num">${Object.keys(D.bajas || {}).length}</td></tr>
+  </table></div>
+  <p class="nota-pie">Si un dispositivo muestra una versión distinta de los otros,
+    está desactualizado: tocá el botón de abajo en ese dispositivo.</p>
+  <div class="acciones">
+    <button class="btn sec" id="btnActualizarApp">Traer la última versión</button>
+  </div>`;
+  $("#estadoDatos").innerHTML = h;
+  const bA = document.getElementById("btnActualizarApp");
+  if (bA) bA.addEventListener("click", actualizarApp);
+}
+
+$("#cfgUmbral").addEventListener("change", () => {
+  D.config.umbral = Math.max(1, Math.min(100, +$("#cfgUmbral").value || 75)); marcarPadron(); guardar();
+});
+$("#cfgJustificados").addEventListener("change", () => {
+  D.config.justificadosDescuentan = +$("#cfgJustificados").value; marcarPadron(); guardar();
+});
+$("#cfgRacha").addEventListener("change", () => {
+  D.config.racha = Math.max(2, Math.min(10, +$("#cfgRacha").value || 3)); marcarPadron(); guardar();
+});
+
+function nuevoId(prefijo, existentes) {
+  let n = 1;
+  const usados = new Set(existentes);
+  // los ids dados de baja no se reciclan: si volvieran a usarse, la lápida del
+  // alumno viejo borraría al alumno nuevo cuando llegue de otro dispositivo
+  for (const id in (D.bajas || {})) usados.add(id);
+  while (usados.has(prefijo + String(n).padStart(4, "0"))) n++;
+  return prefijo + String(n).padStart(4, "0");
+}
+
+/** Deja constancia de que un alumno se dio de baja, y cuándo.
+ *
+ *  Sin esto la baja no puede viajar: el padrón se combina uniendo, y una unión
+ *  solo sabe sumar. El alumno borrado en un dispositivo volvía a aparecer
+ *  porque el otro lo devolvía. La lápida es lo que hace que la baja gane.
+ */
+function darDeBaja(id) {
+  D.bajas = D.bajas || {};
+  D.bajas[id] = new Date().toISOString();
+}
+
+$("#btnAgregarAlumno").addEventListener("click", () => {
+  const nombre = $("#nuevoAlumnoNombre").value.trim().replace(/\s+/g, " ");
+  const cid = $("#nuevoAlumnoCurso").value;
+  if (!nombre) { alerta("#avisoDatos", "Escribí el nombre.", "mal"); return; }
+  if (!cid) { alerta("#avisoDatos", "Elegí el curso.", "mal"); return; }
+  const dup = D.alumnos.find((a) => a.curso === cid &&
+    a.nombre.toLocaleLowerCase("es") === nombre.toLocaleLowerCase("es"));
+  if (dup) { alerta("#avisoDatos", "Ese alumno ya está en el curso.", "alerta"); return; }
+  D.alumnos.push({
+    id: nuevoId("A", D.alumnos.map((a) => a.id)), nombre, curso: cid, alta: null, activo: true,
+  });
+  marcarPadron();
+  $("#nuevoAlumnoNombre").value = "";
+  guardar(); reindexar(); refrescarSelects(); pintarDatos();
+  alerta("#avisoDatos", `${nombre} agregado a ${IDX.cursoPorId[cid].etiqueta}. Se lo empieza a medir desde la próxima clase que le cargues.`, "ok");
+});
+
+$("#btnAgregarCurso").addEventListener("click", () => {
+  const et = $("#nuevoCurso").value.trim().replace(/\s+/g, " ");
+  if (!et) { alerta("#avisoDatos", "Escribí el nombre del curso.", "mal"); return; }
+  if (D.cursos.some((c) => c.etiqueta.toLocaleLowerCase("es") === et.toLocaleLowerCase("es"))) {
+    alerta("#avisoDatos", "Ese curso ya existe.", "alerta"); return;
+  }
+  D.cursos.push({ id: nuevoId("C", D.cursos.map((c) => c.id)), etiqueta: et, umbral: D.config.umbral });
+  marcarPadron();
+  D.cursos.sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, "es"));
+  $("#nuevoCurso").value = "";
+  guardar(); reindexar(); refrescarSelects(); pintarDatos();
+  alerta("#avisoDatos", `Curso ${et} agregado.`, "ok");
+});
+
+/* ---------------- corregir alumnos ---------------- */
+let gestion = null;   // {id, modo} de la fila abierta
+
+function pintarGestion() {
+  const cid = $("#gestCurso").value;
+  const cont = $("#listaGestion");
+  const alumnos = IDX.porCurso[cid] || [];
+  if (!alumnos.length) {
+    cont.innerHTML = `<p class="aviso info">Este curso no tiene alumnos.</p>`; return;
+  }
+  const registrosDe = (id) => {
+    let n = 0, inf = 0;
+    for (const f in D.registros) {
+      if (D.registros[f][id] === undefined) continue;
+      n++;
+      if ((D.inferidos[f] || {})[id]) inf++;
+    }
+    return { n, propias: n - inf, inf };
+  };
+  let h = "";
+  for (const a of alumnos) {
+    const { n, propias, inf } = registrosDe(a.id);
+    const abierta = gestion && gestion.id === a.id;
+    const detalle = n === 0 ? "sin clases registradas"
+      : inf ? `${propias} clase${propias === 1 ? "" : "s"} cargada${propias === 1 ? "" : "s"} por vos · ${inf} ausencia${inf === 1 ? "" : "s"} completada${inf === 1 ? "" : "s"} en la migración`
+            : `${n} clase${n === 1 ? "" : "s"} registrada${n === 1 ? "" : "s"}`;
+    h += `<div class="gfila" data-a="${a.id}">
+      <div class="gnom">${esc(a.nombre)}
+        <small>${detalle}${
+          a.alias && a.alias.length ? " · antes: " + esc(a.alias.join(", ")) : ""}</small></div>
+      <div class="gacc">
+        <button data-acc="renombrar">Renombrar</button>
+        <button data-acc="unir">Unir</button>
+        <button data-acc="borrar" class="mal">Eliminar</button>
+      </div>`;
+    if (abierta && gestion.modo === "renombrar") {
+      h += `<div class="gedit">
+        <input type="text" id="gInput" value="${esc(a.nombre)}">
+        <button data-acc="guardarNombre">Guardar</button>
+        <button data-acc="cancelar" class="sec">Cancelar</button></div>`;
+    }
+    if (abierta && gestion.modo === "unir") {
+      const otros = alumnos.filter((x) => x.id !== a.id);
+      h += `<div class="gedit">
+        <select id="gSelect"><option value="">Unir ${esc(a.nombre)} con…</option>` +
+        otros.map((x) => `<option value="${x.id}">${esc(x.nombre)}</option>`).join("") +
+        `</select>
+        <button data-acc="confirmarUnir">Unir</button>
+        <button data-acc="cancelar" class="sec">Cancelar</button></div>
+        <p class="nota-pie" style="flex:1 1 100%">Las clases de los dos quedan en la ficha de
+          ${esc(a.nombre)} y la otra ficha desaparece. Si los dos tienen cargada la misma fecha,
+          se conserva la de ${esc(a.nombre)}.</p>`;
+    }
+    if (abierta && gestion.modo === "borrar") {
+      h += `<div class="gedit">
+        <button data-acc="confirmarBorrar" class="mal">Sí, eliminar${
+          n ? ` y perder sus ${n} registro${n === 1 ? "" : "s"}` : ""}</button>
+        <button data-acc="cancelar" class="sec">Cancelar</button></div>`;
+    }
+    h += `</div>`;
+  }
+  cont.innerHTML = h;
+  const foco = $("#gInput"); if (foco) { foco.focus(); foco.select(); }
+}
+
+$("#listaGestion").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-acc]");
+  if (!b) return;
+  const id = b.closest(".gfila").dataset.a;
+  const a = IDX.alumnoPorId[id];
+  const acc = b.dataset.acc;
+
+  if (acc === "cancelar") { gestion = null; pintarGestion(); return; }
+  if (["renombrar", "unir", "borrar"].includes(acc)) {
+    gestion = { id, modo: acc }; pintarGestion(); return;
+  }
+
+  if (acc === "guardarNombre") {
+    const nuevo = $("#gInput").value.trim().replace(/\s+/g, " ");
+    if (!nuevo) { alerta("#avisoDatos", "El nombre no puede quedar vacío.", "mal"); return; }
+    const choca = D.alumnos.find((x) => x.curso === a.curso && x.id !== a.id &&
+      normTexto(x.nombre) === normTexto(nuevo));
+    if (choca) { alerta("#avisoDatos", "Ya hay otro alumno con ese nombre en el curso. Si son la misma persona, usá Unir.", "alerta"); return; }
+    if (normTexto(nuevo) !== normTexto(a.nombre)) {
+      a.alias = [...new Set([...(a.alias || []), a.nombre])];
+    }
+    const previo = a.nombre;
+    a.nombre = nuevo;
+    marcarPadron();
+    gestion = null; guardar(); reindexar(); refrescarSelects(); pintarGestion(); pintarDatos();
+    alerta("#avisoDatos", `${previo} pasó a llamarse ${nuevo}. Sus clases quedaron intactas.`, "ok");
+    return;
+  }
+
+  if (acc === "confirmarUnir") {
+    const otroId = $("#gSelect").value;
+    if (!otroId) { alerta("#avisoDatos", "Elegí con qué alumno unirlo.", "mal"); return; }
+    const otro = IDX.alumnoPorId[otroId];
+    let movidas = 0, chocadas = 0;
+    for (const f in D.registros) {
+      if (D.registros[f][otroId] === undefined) continue;
+      if (D.registros[f][a.id] === undefined) {
+        D.registros[f][a.id] = D.registros[f][otroId];
+        if ((D.inferidos[f] || {})[otroId]) (D.inferidos[f] || (D.inferidos[f] = {}))[a.id] = 1;
+        movidas++;
+      } else chocadas++;
+      delete D.registros[f][otroId];
+      if (D.inferidos[f]) delete D.inferidos[f][otroId];
+      if (!Object.keys(D.registros[f]).length) delete D.registros[f];
+    }
+    if (otro.alta && (!a.alta || otro.alta < a.alta)) a.alta = otro.alta;
+    a.alias = [...new Set([...(a.alias || []), otro.nombre, ...(otro.alias || [])])];
+    D.alumnos = D.alumnos.filter((x) => x.id !== otroId);
+    darDeBaja(otroId);
+    marcarPadron();
+    gestion = null; guardar(); reindexar(); refrescarSelects(); pintarGestion(); pintarDatos();
+    alerta("#avisoDatos",
+      `${otro.nombre} se unió a ${a.nombre}: ${movidas} clases sumadas` +
+      (chocadas ? `, ${chocadas} fechas que estaban en las dos se resolvieron con la de ${a.nombre}` : "") + ".",
+      "ok");
+    return;
+  }
+
+  if (acc === "confirmarBorrar") {
+    for (const f in D.registros) {
+      delete D.registros[f][id];
+      if (D.inferidos[f]) delete D.inferidos[f][id];
+      if (!Object.keys(D.registros[f]).length) delete D.registros[f];
+    }
+    D.alumnos = D.alumnos.filter((x) => x.id !== id);
+    darDeBaja(id);
+    marcarPadron();
+    gestion = null; guardar(); reindexar(); refrescarSelects(); pintarGestion(); pintarDatos();
+    alerta("#avisoDatos", `${a.nombre} eliminado.`, "ok");
+  }
+});
+
+$("#gestCurso").addEventListener("change", () => { gestion = null; pintarGestion(); });
+
+/* ==================================================================
+   SINCRONIZACION ENTRE DISPOSITIVOS
+
+   La unidad que viaja es la misma que usa "Combinar": la jornada
+   (curso + fecha), mas un bloque con el padron. Cada bloque se cifra
+   ACA ADENTRO antes de salir y su id es un hash, asi que el servidor
+   guarda cajas cerradas sin saber de quien ni de que curso son.
+
+   Ante conflicto gana la edicion mas reciente, igual que al combinar
+   a mano. El cursor de "que me falta bajar" lo lleva el servidor con
+   su propio reloj, para que un dispositivo con la hora mal no haga
+   desaparecer jornadas.
+   ================================================================== */
+
+const CLAVE_PADRON = "__padron__";
+let claveCifrado = null;      // CryptoKey en memoria, se importa una sola vez
+let sincronizando = false;
+
+function configNube() {
+  const s = D.sync || {};
+  const secreto = s.secreto || (SYNC && SYNC.secreto);
+  const clave = s.clave || (SYNC && SYNC.clave);
+  if (!SYNC || !SYNC.url || !SYNC.anon || !secreto || !clave) return null;
+  return { url: SYNC.url, anon: SYNC.anon, secreto, clave };
+}
+
+/** Guarda el secreto y la clave que vinieron del bloque cifrado, para que este
+ *  dispositivo pueda sincronizar solo de acá en adelante. */
+function guardarCredencialesNube(cfg) {
+  if (!cfg || !cfg.secreto || !cfg.clave) return;
+  D.sync = Object.assign({}, D.sync, { secreto: cfg.secreto, clave: cfg.clave });
+  guardar();
+}
+
+async function obtenerClave() {
+  if (claveCifrado) return claveCifrado;
+  const cfg = configNube();
+  if (!cfg) throw new Error("sin configuración de sincronización");
+  claveCifrado = await crypto.subtle.importKey(
+    "raw", deB64(cfg.clave), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  return claveCifrado;
+}
+
+const aB64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b)));
+
+async function cifrarBloque(obj) {
+  const clave = await obtenerClave();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, clave,
+    new TextEncoder().encode(JSON.stringify(obj)));
+  return aB64(iv) + "." + aB64(ct);
+}
+
+async function descifrarBloque(txt) {
+  const clave = await obtenerClave();
+  const [iv, ct] = txt.split(".");
+  const plano = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: deB64(iv) }, clave, deB64(ct));
+  return JSON.parse(new TextDecoder().decode(plano));
+}
+
+async function idBloque(clave) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("asis:" + clave));
+  return aB64(h).replace(/[^A-Za-z0-9]/g, "").slice(0, 32);
+}
+
+/** Arma el contenido de una jornada: quiénes y con qué estado. */
+function contenidoJornada(cursoId, fecha) {
+  const registros = {}, inferidos = [];
+  for (const a of (IDX.porCurso[cursoId] || [])) {
+    const e = (D.registros[fecha] || {})[a.id];
+    if (e === undefined) continue;
+    registros[a.id] = e;
+    if ((D.inferidos[fecha] || {})[a.id]) inferidos.push(a.id);
+  }
+  return { tipo: "j", curso: cursoId, fecha, registros, inferidos };
+}
+
+/** Resumen estable del padrón, sin depender del orden, para poder comparar
+ *  el resultado de una unión contra lo que mandó el otro dispositivo. */
+function huellaPadron(cursos, alumnos, config, bajas) {
+  cursos = cursos || D.cursos;
+  alumnos = alumnos || D.alumnos;
+  config = config || D.config;
+  bajas = bajas || D.bajas || {};
+  return JSON.stringify([
+    cursos.map((c) => [c.id, c.etiqueta, c.umbral ?? null].join("|")).sort(),
+    alumnos.map((a) => [a.id, a.nombre, a.curso, a.alta || "",
+                        a.activo === false ? 0 : 1].join("|")).sort(),
+    [config.umbral, config.justificadosDescuentan, config.racha].join("|"),
+    Object.keys(bajas).sort(),
+  ]);
+}
+
+function contenidoPadron() {
+  return {
+    tipo: "p",
+    cursos: D.cursos,
+    alumnos: D.alumnos,
+    config: D.config,
+    bajas: D.bajas || {},
+  };
+}
+
+async function llamarNube(funcion, cuerpo) {
+  const cfg = configNube();
+  const resp = await fetch(`${cfg.url}/rest/v1/rpc/${funcion}`, {
+    method: "POST",
+    headers: {
+      "apikey": cfg.anon,
+      "Authorization": "Bearer " + cfg.anon,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(Object.assign({ p_secreto: cfg.secreto }, cuerpo)),
+  });
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`${resp.status}: ${t.slice(0, 160)}`);
+  }
+  return resp.json();
+}
+
+/** Aplica un bloque de jornada que vino del servidor. */
+function aplicarJornadaNube(c, editado) {
+  const alumnos = IDX.porCurso[c.curso] || [];
+  if (!alumnos.length && !D.cursos.some((x) => x.id === c.curso)) return false;
+  for (const a of alumnos) {
+    if (D.registros[c.fecha]) delete D.registros[c.fecha][a.id];
+    if (D.inferidos[c.fecha]) delete D.inferidos[c.fecha][a.id];
+  }
+  for (const aid in c.registros) {
+    (D.registros[c.fecha] || (D.registros[c.fecha] = {}))[aid] = c.registros[aid];
+  }
+  for (const aid of (c.inferidos || [])) {
+    (D.inferidos[c.fecha] || (D.inferidos[c.fecha] = {}))[aid] = 1;
+  }
+  if (D.registros[c.fecha] && !Object.keys(D.registros[c.fecha]).length) delete D.registros[c.fecha];
+  D.editado[claveEdicion(c.curso, c.fecha)] = editado;
+  return true;
+}
+
+async function sincronizar(subirTodo) {
+  const cfg = configNube();
+  if (!cfg) { avisoNube("Este dispositivo todavía no tiene la sincronización configurada.", "alerta"); return; }
+  if (sincronizando) return;
+  if (!navigator.onLine) { avisoNube("Sin conexión. Se sincroniza sola cuando vuelvas a tener señal.", "info"); return; }
+  sincronizando = true;
+  pintarEstadoNube("Sincronizando…");
+  const r = { subidos: 0, bajados: 0, aplicados: 0, ignorados: 0 };
+  try {
+    D.sync = D.sync || {};
+
+    /* ---- 1. bajar y fusionar lo que hicieron los otros ----
+       Va PRIMERO a proposito. Si se subiera antes, este dispositivo
+       pisaria en el servidor el bloque del otro y despues leeria lo que
+       el mismo acaba de escribir: las bajas ajenas se perderian. */
+    const filas = await llamarNube("asis_bajar", { p_desde: D.sync.cursor || null });
+    r.bajados = filas.length;
+    const descifradas = [];
+    for (const f of filas) {
+      try {
+        descifradas.push({ contenido: await descifrarBloque(f.contenido),
+                           editado: f.editado, actualizado: f.actualizado });
+      } catch (e) { r.ignorados++; }   // bloque de otra clave: no es nuestro
+    }
+    // el padrón primero: las jornadas necesitan que existan sus alumnos
+    descifradas.sort((a, b) => (a.contenido.tipo === "p" ? -1 : 1) - (b.contenido.tipo === "p" ? -1 : 1));
+
+    for (const f of descifradas) {
+      const c = f.contenido;
+      if (c.tipo === "p") {
+        // El padrón NUNCA se descarta por ser más viejo, y esto es la clave del
+        // asunto: si un dispositivo tocó el padrón un segundo después que otro,
+        // descartar el bloque entero se llevaba puestas las bajas del otro y el
+        // alumno borrado revivía. Altas y bajas solo se suman; las bajas mandan
+        // sobre las altas. Así los tres dispositivos llegan al mismo resultado,
+        // sin importar en qué orden sincronicen.
+        const huellaRemota = huellaPadron(c.cursos, c.alumnos, c.config || D.config,
+          Object.assign({}, D.bajas, c.bajas || {}));
+        // la configuración sí es "gana el más nuevo": no tiene sentido unirla
+        if (c.config && f.editado > (D.editado[CLAVE_PADRON] || "")) {
+          D.config = Object.assign({}, D.config, c.config);
+        }
+        combinar({ cursos: c.cursos, alumnos: c.alumnos, bajas: c.bajas || {},
+                   registros: {}, editado: {} });
+        if (huellaPadron() === huellaRemota) {
+          // la unión quedó igual a lo que mandó el otro: no hay nada que devolver
+          const sello = (D.editado[CLAVE_PADRON] || "") > f.editado
+            ? D.editado[CLAVE_PADRON] : f.editado;
+          D.editado[CLAVE_PADRON] = sello;
+          (D.sync.enviados || (D.sync.enviados = {}))[CLAVE_PADRON] = sello;
+        } else {
+          // acá había algo que el otro no tenía: hay que publicar la unión
+          D.editado[CLAVE_PADRON] = new Date().toISOString();
+        }
+        r.aplicados++;
+      } else {
+        const k = claveEdicion(c.curso, c.fecha);
+        if ((D.editado[k] || "") >= f.editado) continue;
+        if (aplicarJornadaNube(c, f.editado)) {
+          (D.sync.enviados || (D.sync.enviados = {}))[k] = f.editado;  // ya está arriba
+          r.aplicados++;
+        }
+      }
+      if (!D.sync.cursor || f.actualizado > D.sync.cursor) D.sync.cursor = f.actualizado;
+    }
+
+    /* ---- 2. subir el resultado de la fusion ---- */
+    const enviados = subirTodo ? {} : (D.sync.enviados || {});
+    const pendientes = [];
+    const padronEditado = D.editado[CLAVE_PADRON] || "";
+    if (padronEditado && enviados[CLAVE_PADRON] !== padronEditado) {
+      pendientes.push({ clave: CLAVE_PADRON, editado: padronEditado, contenido: contenidoPadron() });
+    }
+    for (const k in D.editado) {
+      if (k === CLAVE_PADRON) continue;
+      if (enviados[k] === D.editado[k]) continue;
+      const corte = k.indexOf("|");
+      pendientes.push({
+        clave: k, editado: D.editado[k],
+        contenido: contenidoJornada(k.slice(0, corte), k.slice(corte + 1)),
+      });
+    }
+    if (pendientes.length) {
+      const paquete = [];
+      for (const p of pendientes) {
+        paquete.push({ id: await idBloque(p.clave), editado: p.editado,
+                       contenido: await cifrarBloque(p.contenido) });
+      }
+      // de a 60 por vez, para no mandar un cuerpo gigante
+      for (let i = 0; i < paquete.length; i += 60) {
+        await llamarNube("asis_subir", { p_bloques: paquete.slice(i, i + 60) });
+      }
+      for (const p of pendientes) enviados[p.clave] = p.editado;
+      r.subidos = pendientes.length;
+      D.sync.enviados = enviados;
+    }
+
+    D.sync.ultima = new Date().toISOString();
+    guardar(); reindexar(); refrescarSelects();
+    if (!$("#v-lista").classList.contains("oculto")) cargarBorrador();
+
+    const partes = [];
+    if (r.subidos) partes.push(`${r.subidos} subidas`);
+    if (r.aplicados) partes.push(`${r.aplicados} bajadas de otro dispositivo`);
+    avisoNube(partes.length ? "Sincronizado: " + partes.join(" y ") + "."
+                            : "Ya estaba todo al día.", "ok");
+    marcarGuardado("Sincronizado");
+  } catch (e) {
+    avisoNube("No se pudo sincronizar: " + e.message +
+              " Tus datos están a salvo en este dispositivo; se reintenta después.", "mal");
+  } finally {
+    sincronizando = false;
+    pintarEstadoNube();
+  }
+}
+
+function avisoNube(txt, tipo) {
+  const el = $("#avisoNube");
+  if (el) el.innerHTML = `<div class="aviso ${tipo}">${esc(txt)}</div>`;
+}
+
+function pintarEstadoNube(trabajando) {
+  const el = $("#estadoNube");
+  if (!el) return;
+  const cfg = configNube();
+  if (!cfg) {
+    el.innerHTML = `<p class="aviso alerta">Este dispositivo todavía no tiene la clave de
+      sincronización. Cargá tus datos con la contraseña y se configura sola.</p>`;
+    return;
+  }
+  const s = D.sync || {};
+  const pend = Object.keys(D.editado || {}).filter((k) => (s.enviados || {})[k] !== D.editado[k]).length;
+  el.innerHTML = `<div class="tabla-wrap"><table>
+    <tr><td>Estado</td><td class="num">${trabajando ? "Sincronizando…"
+      : navigator.onLine ? "Conectado" : "Sin conexión"}</td></tr>
+    <tr><td>Última sincronización</td><td class="num">${
+      s.ultima ? fechaLarga(s.ultima.slice(0, 10)) + " " + s.ultima.slice(11, 16) : "nunca"}</td></tr>
+    <tr><td>Jornadas sin subir</td><td class="num">${pend}</td></tr>
+  </table></div>`;
+}
+
+/** Primera vez en un dispositivo: traer todo desde el servidor, mostrando que
+ *  está trabajando. Puede tardar unos segundos con el año entero. */
+async function primeraCarga() {
+  const cont = $("#listaAlumnos");
+  if (cont && !D.alumnos.length) {
+    cont.innerHTML = `<p class="aviso info"><strong>Trayendo tus cursos…</strong><br>
+      Es solo esta vez, en este dispositivo.</p>`;
+  }
+  await sincronizar(false);
+  if (!D.alumnos.length) {
+    avisoNube("No llegó nada del servidor. Fijate que tengas conexión y volvé a probar.", "alerta");
+  } else {
+    marcarGuardado(`Listo: ${D.cursos.length} cursos cargados`);
+  }
+  refrescarSelects(); cargarBorrador();
+}
+
+let sincDemorada = null;
+function sincronizarDespues() {
+  if (!configNube()) return;
+  clearTimeout(sincDemorada);
+  sincDemorada = setTimeout(() => sincronizar(false), 4000);
+}
+
+/** Arma el enlace personal para dejar otro dispositivo funcionando de una. */
+function enlacePersonal() {
+  const cfg = configNube();
+  if (!cfg) return null;
+  const json = JSON.stringify({ s: cfg.secreto, k: cfg.clave });
+  const b64 = btoa(unescape(encodeURIComponent(json)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const base = SYNC.publico || (location.protocol.indexOf("http") === 0
+    ? location.origin + location.pathname : "");
+  return base + "#c=" + b64;
+}
+
+$("#btnEnlace").addEventListener("click", async () => {
+  const url = enlacePersonal();
+  if (!url) { avisoNube("Este dispositivo todavía no tiene la llave.", "alerta"); return; }
+  let copiado = false;
+  try { await navigator.clipboard.writeText(url); copiado = true; } catch (e) { /* sin permiso */ }
+  $("#avisoNube").innerHTML =
+    `<div class="aviso ${copiado ? "ok" : "info"}">
+       ${copiado ? "Enlace copiado." : "Copiá este enlace:"}
+       Abrilo <strong>una sola vez</strong> en el otro dispositivo y queda cargado y sincronizando.
+       <br><br><strong>Es una llave: no lo publiques ni lo mandes a un grupo.</strong>
+       Mandátelo a vos mismo.
+       <textarea readonly rows="3" style="width:100%;margin-top:8px;font-size:.8rem;
+         border:1px solid var(--borde);border-radius:8px;padding:8px">${esc(url)}</textarea>
+     </div>`;
+  const ta = $("#avisoNube textarea"); if (ta) { ta.focus(); ta.select(); }
+});
+
+$("#btnSincronizar").addEventListener("click", () => sincronizar(false));
+$("#btnSubirTodo").addEventListener("click", () => sincronizar(true));
+window.addEventListener("online", () => sincronizarDespues());
+
+// Al volver a la app (cambiar de pestaña, desbloquear el celular) se pone al día
+// sola. Es el caso de tener los tres dispositivos abiertos a la vez: antes había
+// que tocar el botón para enterarse de lo que se cargó en otro.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") sincronizarDespues();
+});
+window.addEventListener("focus", () => sincronizarDespues());
+
+/* ---------------- exportación ---------------- */
+function bajar(nombre, texto, tipo) {
+  // El BOM va solo en los CSV, para que Excel los abra con los acentos bien.
+  // En el JSON de copia molestaría: hay lectores que no lo toleran.
+  const partes = tipo ? [texto] : ["﻿", texto];
+  const blob = new Blob(partes, { type: (tipo || "text/csv") + ";charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = crear("a", { href: url, download: nombre });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function csv(filas) {
+  return filas.map((f) => f.map((v) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(";")).join("\r\n");
+}
+function selloFecha() { return hoyISO().replace(/-/g, ""); }
+
+$("#btnCsvRegistros").addEventListener("click", () => {
+  const filas = [["Fecha", "Curso", "Alumno", "Estado", "Cuenta como asistencia", "Inferido en la migracion"]];
+  for (const f of Object.keys(D.registros).sort()) {
+    for (const aid in D.registros[f]) {
+      const a = IDX.alumnoPorId[aid]; if (!a) continue;
+      const e = D.registros[f][aid];
+      filas.push([fechaLarga(f), IDX.cursoPorId[a.curso].etiqueta, a.nombre, ESTADOS[e],
+        e === 0 || e === 1 ? "Si" : "No", (D.inferidos[f] || {})[aid] ? "Si" : "No"]);
+    }
+  }
+  bajar(`asistencia_registros_${selloFecha()}.csv`, csv(filas));
+});
+
+$("#btnCsvResumen").addEventListener("click", () => {
+  const filas = [["Curso", "Alumno", "Se incorporo", "Clases dictadas del curso",
+    "Clases medidas", "Asistio", "Presente", "Tarde", "Ausente", "Justificado",
+    "% asistencia", "% del curso", "Faltas seguidas", "% ultimo mes"]];
+  for (const c of D.cursos) {
+    const sc = statsCurso(c);
+    for (const st of [...sc.filas].sort((x, y) => (x.porcentaje ?? 999) - (y.porcentaje ?? 999))) {
+      filas.push([c.etiqueta, st.alumno.nombre, st.alta ? fechaLarga(st.alta) : "",
+        st.jornadasCurso, st.conRegistro, st.asistidas, st.presentes, st.tardes,
+        st.ausentes, st.justificados,
+        st.porcentaje === null ? "" : st.porcentaje.toFixed(1).replace(".", ","),
+        sc.promedio === null ? "" : sc.promedio.toFixed(1).replace(".", ","),
+        st.rachaActual,
+        st.ultimoMes ? st.ultimoMes.pct.toFixed(1).replace(".", ",") : ""]);
+    }
+  }
+  bajar(`asistencia_resumen_alumnos_${selloFecha()}.csv`, csv(filas));
+});
+
+$("#btnCsvCursos").addEventListener("click", () => {
+  const filas = [["Curso", "Alumnos", "Clases dictadas", "Desde", "Hasta", "Promedio %",
+    "Umbral %", "Bajo umbral", "Con faltas seguidas"]];
+  for (const c of D.cursos) {
+    const s = statsCurso(c);
+    filas.push([c.etiqueta, s.alumnos.length, s.jornadas.length,
+      s.rango ? fechaLarga(s.rango[0]) : "", s.rango ? fechaLarga(s.rango[1]) : "",
+      s.promedio === null ? "" : s.promedio.toFixed(1).replace(".", ","),
+      s.umbral, s.enRiesgo.length, s.conRacha.length]);
+  }
+  bajar(`asistencia_resumen_cursos_${selloFecha()}.csv`, csv(filas));
+});
+
+$("#btnBackup").addEventListener("click", () => {
+  bajar(`copia_asistencia_${selloFecha()}.json`,
+    JSON.stringify({ app: "asistencia2026", version: 1, fecha: new Date().toISOString(), datos: D }),
+    "application/json");
+  marcarGuardado("Copia descargada");
+});
+
+$("#btnRestaurar").addEventListener("click", () => $("#fileRestaurar").click());
+$("#fileRestaurar").addEventListener("change", (ev) => {
+  const file = ev.target.files[0]; if (!file) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    try {
+      const j = JSON.parse(lector.result);
+      const d = j.datos || j;
+      if (!d.alumnos || !d.cursos || !d.registros) throw new Error("formato");
+      if (!confirm("Esto reemplaza todos los datos actuales por los de la copia. ¿Seguir?")) return;
+      D = d;
+      D.inferidos = D.inferidos || {};
+      D.editado = D.editado || {};
+      D.bajas = D.bajas || {};
+      D.sync = D.sync || {};
+      D.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3 }, D.config || {});
+      guardar(); reindexar(); refrescarSelects(); cargarBorrador(); pintarDatos();
+      alerta("#avisoDatos", "Copia restaurada.", "ok");
+    } catch (e) {
+      alerta("#avisoDatos", "Ese archivo no es una copia válida de la app.", "mal");
+    }
+    ev.target.value = "";
+  };
+  lector.readAsText(file);
+});
+
+/* ---------------- combinar dos dispositivos ----------------
+   La unidad de combinación es la jornada (curso + fecha), que es como se carga
+   la asistencia. Para cada jornada gana la que se haya tocado último; las que
+   están en un solo dispositivo se suman sin tocar nada. Los cursos y alumnos
+   se unen por nombre, así que el mismo alumno cargado a mano en los dos lados
+   no se duplica. */
+const normTexto = (s) => String(s || "").trim().toLocaleUpperCase("es").replace(/\s+/g, " ");
+
+function combinar(R) {
+  const res = { cursosNuevos: 0, alumnosNuevos: 0, jornadasSumadas: 0,
+                jornadasActualizadas: 0, jornadasConservadas: 0 };
+
+  /* --- cursos: se unen por etiqueta --- */
+  const cursoPorEtiqueta = {};
+  for (const c of D.cursos) cursoPorEtiqueta[normTexto(c.etiqueta)] = c;
+  const mapCurso = {};
+  // Se adopta el id que trae el otro dispositivo siempre que esté libre. Si cada
+  // uno inventara el suyo, el mismo alumno terminaría con dos identidades y sus
+  // registros de asistencia no engancharían con nadie.
+  const idsCurso = new Set(D.cursos.map((c) => c.id));
+  for (const rc of R.cursos || []) {
+    const et = normTexto(rc.etiqueta);
+    let lc = cursoPorEtiqueta[et];
+    if (!lc) {
+      const id = rc.id && !idsCurso.has(rc.id) ? rc.id : nuevoId("C", [...idsCurso]);
+      idsCurso.add(id);
+      lc = { id, etiqueta: rc.etiqueta, umbral: rc.umbral ?? D.config.umbral };
+      D.cursos.push(lc); cursoPorEtiqueta[et] = lc; res.cursosNuevos++;
+    }
+    mapCurso[rc.id] = lc.id;
+  }
+  D.cursos.sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, "es"));
+
+  /* --- bajas: se acumulan, nunca se pierden --- */
+  D.bajas = D.bajas || {};
+  for (const id in (R.bajas || {})) {
+    if (!D.bajas[id] || R.bajas[id] > D.bajas[id]) D.bajas[id] = R.bajas[id];
+  }
+
+  /* --- alumnos: se unen por curso + nombre --- */
+  const alumnoPorClave = {};
+  for (const a of D.alumnos) alumnoPorClave[a.curso + "|" + normTexto(a.nombre)] = a;
+  const mapAlumno = {};
+  const idsAlumno = new Set(D.alumnos.map((a) => a.id));
+  for (const ra of R.alumnos || []) {
+    const cid = mapCurso[ra.curso];
+    if (!cid) continue;
+    if (D.bajas[ra.id]) continue;   // lo diste de baja: no vuelve a entrar
+    const k = cid + "|" + normTexto(ra.nombre);
+    let la = alumnoPorClave[k];
+    if (!la) {
+      const id = ra.id && !idsAlumno.has(ra.id) ? ra.id : nuevoId("A", [...idsAlumno]);
+      idsAlumno.add(id);
+      la = { id, nombre: ra.nombre, curso: cid, alta: ra.alta || null,
+             alias: ra.alias || [], activo: ra.activo !== false };
+      D.alumnos.push(la); alumnoPorClave[k] = la; res.alumnosNuevos++;
+    } else if (ra.alta && (!la.alta || ra.alta < la.alta)) {
+      la.alta = ra.alta;   // se incorporó antes de lo que sabía este dispositivo
+    }
+    mapAlumno[ra.id] = la.id;
+  }
+
+  // una baja que llegó del otro dispositivo también se aplica acá
+  const bajados = D.alumnos.filter((a) => D.bajas[a.id]);
+  if (bajados.length) {
+    const ids = new Set(bajados.map((a) => a.id));
+    D.alumnos = D.alumnos.filter((a) => !ids.has(a.id));
+    for (const f in D.registros) {
+      for (const id of ids) {
+        delete D.registros[f][id];
+        if (D.inferidos[f]) delete D.inferidos[f][id];
+      }
+      if (!Object.keys(D.registros[f]).length) delete D.registros[f];
+    }
+    res.alumnosBajados = bajados.length;
+  }
+
+  /* --- índice de las jornadas del otro dispositivo --- */
+  const cursoDeAlumnoRemoto = {};
+  for (const ra of R.alumnos || []) if (mapAlumno[ra.id]) cursoDeAlumnoRemoto[ra.id] = mapCurso[ra.curso];
+  const jornadasRemotas = {};   // "curso|fecha" -> [[alumnoLocal, estado, inferido], ...]
+  for (const f in (R.registros || {})) {
+    for (const raid in R.registros[f]) {
+      const cid = cursoDeAlumnoRemoto[raid];
+      if (!cid) continue;
+      const k = claveEdicion(cid, f);
+      (jornadasRemotas[k] || (jornadasRemotas[k] = [])).push(
+        [mapAlumno[raid], R.registros[f][raid], ((R.inferidos || {})[f] || {})[raid] ? 1 : 0]);
+    }
+  }
+
+  /* --- claves de jornada de los dos lados, incluidas las borradas --- */
+  const claves = new Set([...Object.keys(jornadasRemotas), ...Object.keys(R.editado || {})]);
+  const alumnosDeCurso = {};
+  for (const a of D.alumnos) (alumnosDeCurso[a.curso] || (alumnosDeCurso[a.curso] = [])).push(a);
+
+  for (const k of claves) {
+    const corte = k.indexOf("|");
+    const cid = k.slice(0, corte), f = k.slice(corte + 1);
+    const tsLocal = D.editado[k] || "";
+    const tsRemoto = (R.editado || {})[k] || "";
+    const hayLocal = (alumnosDeCurso[cid] || []).some(
+      (a) => (D.registros[f] || {})[a.id] !== undefined);
+
+    if (!hayLocal && !tsLocal) {
+      // esta jornada solo existe en el otro dispositivo: se suma tal cual
+      if (!jornadasRemotas[k]) continue;
+      aplicarJornada(cid, f, jornadasRemotas[k], tsRemoto);
+      res.jornadasSumadas++;
+      continue;
+    }
+    if (!tsLocal && !tsRemoto) continue;   // ninguno la tocó: son la misma, no hay nada que decidir
+    if (tsRemoto && tsRemoto > tsLocal) {
+      aplicarJornada(cid, f, jornadasRemotas[k] || [], tsRemoto);
+      res.jornadasActualizadas++;
+    } else {
+      res.jornadasConservadas++;
+    }
+  }
+
+  function aplicarJornada(cid, f, filas, ts) {
+    for (const a of (alumnosDeCurso[cid] || [])) {
+      if (D.registros[f]) delete D.registros[f][a.id];
+      if (D.inferidos[f]) delete D.inferidos[f][a.id];
+    }
+    for (const [aid, estado, inf] of filas) {
+      if (!aid) continue;
+      (D.registros[f] || (D.registros[f] = {}))[aid] = estado;
+      if (inf) (D.inferidos[f] || (D.inferidos[f] = {}))[aid] = 1;
+    }
+    if (D.registros[f] && !Object.keys(D.registros[f]).length) delete D.registros[f];
+    if (ts) D.editado[claveEdicion(cid, f)] = ts;
+  }
+
+  return res;
+}
+
+$("#btnCombinar").addEventListener("click", () => $("#fileCombinar").click());
+$("#fileCombinar").addEventListener("change", (ev) => {
+  const file = ev.target.files[0]; if (!file) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    try {
+      const j = JSON.parse(lector.result);
+      const R = j.datos || j;
+      if (!R.alumnos || !R.cursos || !R.registros) throw new Error("formato");
+      const r = combinar(R);
+      guardar(); reindexar(); refrescarSelects(); cargarBorrador(); pintarDatos();
+      const partes = [];
+      if (r.jornadasSumadas) partes.push(`${r.jornadasSumadas} jornadas nuevas`);
+      if (r.jornadasActualizadas) partes.push(`${r.jornadasActualizadas} actualizadas por ser más recientes`);
+      if (r.jornadasConservadas) partes.push(`${r.jornadasConservadas} se conservaron como estaban`);
+      if (r.alumnosNuevos) partes.push(`${r.alumnosNuevos} alumnos nuevos`);
+      if (r.alumnosBajados) partes.push(`${r.alumnosBajados} alumnos dados de baja`);
+      if (r.cursosNuevos) partes.push(`${r.cursosNuevos} cursos nuevos`);
+      alerta("#avisoCombinar",
+        partes.length ? "Combinado: " + partes.join(", ") + "."
+                      : "Los dos dispositivos ya estaban iguales: no hubo nada que combinar.",
+        "ok");
+    } catch (e) {
+      alerta("#avisoCombinar", "Ese archivo no es una copia válida de la app.", "mal");
+    }
+    ev.target.value = "";
+  };
+  lector.readAsText(file);
+});
+
+$("#btnReset").addEventListener("click", () => {
+  if (!confirm("Se pierde todo lo cargado desde la migración. ¿Seguro?")) return;
+  if (!confirm("Última confirmación: esto no se puede deshacer.")) return;
+  D = desdeSemilla();
+  guardar(); reindexar(); refrescarSelects(); cargarBorrador(); pintarDatos();
+  alerta("#avisoDatos", "Datos restaurados al estado de la migración.", "ok");
+});
+
+/* ---------------- arranque ---------------- */
+function refrescarSelects() {
+  const c1 = $("#selCurso").value, c2 = $("#selCursoAl").value, c3 = $("#selCursoRep").value;
+  llenarSelectCursos($("#selCurso"), c1);
+  llenarSelectCursos($("#selCursoAl"), c2);
+  llenarSelectCursos($("#selCursoRep"), c3);
+  llenarSelectCursos($("#nuevoAlumnoCurso"), $("#nuevoAlumnoCurso").value);
+  llenarSelectCursos($("#gestCurso"), $("#gestCurso").value);
+  llenarSelectAlumnos();
+}
+
+/** Fuerza a este dispositivo a traer la última versión publicada.
+ *
+ *  El service worker guarda la app para que abra sin señal, y eso mismo hace que
+ *  a veces siga mostrando una versión vieja. Esto tira esa copia y la vuelve a
+ *  pedir. Los datos de asistencia no se tocan: viven aparte, en el dispositivo.
+ */
+async function actualizarApp() {
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) await r.unregister();
+    for (const k of await caches.keys()) await caches.delete(k);
+  } catch (e) { /* si el navegador no lo soporta, alcanza con recargar */ }
+  location.reload();
+}
+
+/** Si el navegador no deja guardar, el trabajo del día se pierde al cerrar.
+ *  Vale más avisarlo fuerte y de entrada que descubrirlo en junio. */
+function verificarAlmacenamiento() {
+  let anda = false;
+  try {
+    localStorage.setItem("__prueba__", "1");
+    anda = localStorage.getItem("__prueba__") === "1";
+    localStorage.removeItem("__prueba__");
+  } catch (e) { anda = false; }
+  if (anda) return;
+  const av = crear("div", { className: "aviso mal no-print" });
+  av.style.cssText = "margin:14px;font-weight:600";
+  av.innerHTML = `Este navegador no está guardando nada: lo que cargues se pierde al cerrar
+    la página. Suele pasar en modo incógnito o con el almacenamiento bloqueado.
+    Abrí el archivo en una ventana normal antes de tomar lista.`;
+  document.querySelector("main").prepend(av);
+}
+
+function iniciar() {
+  // la version va a la vista, arriba de todo: es lo primero que hay que
+  // mirar cuando un dispositivo no se comporta como los otros
+  const sello = document.getElementById("sello");
+  if (sello) sello.textContent = "v" + VERSION;
+
+  // Si está publicada en un servidor, el service worker la deja funcionando sin
+  // señal. Abierta como archivo local no hace falta: ya está todo en el disco.
+  if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  verificarAlmacenamiento();
+  const habiaGuardado = !!localStorage.getItem(CLAVE_LS);
+  D = cargar();
+  reindexar();
+  refrescarSelects();
+  $("#selFecha").value = hoyISO();
+  $("#cfgUmbral").value = D.config.umbral;
+  cargarBorrador();
+
+  // ¿Vino con el enlace personal? Entonces no hay nada que preguntar: se guarda
+  // la llave, se limpia la barra de direcciones y se traen los datos.
+  const delEnlace = credencialesDelEnlace();
+  if (delEnlace) {
+    D.sync = Object.assign({}, D.sync, delEnlace);
+    guardar();
+    limpiarEnlace();
+    claveCifrado = null;
+    primeraCarga();
+  } else if (CIFRADO && !habiaGuardado && !D.alumnos.length) {
+    // Version publicada sin enlace: pedir la contraseña.
+    mostrarCandado(true);
+    setTimeout(() => $("#clave").focus(), 120);
+  }
+  // al abrir, ponerse al día con lo que hayan cargado los otros dispositivos
+  if (configNube() && D.alumnos.length) sincronizarDespues();
+
+  $("#btnAbrir").addEventListener("click", abrirConClave);
+  $("#clave").addEventListener("keydown", (ev) => { if (ev.key === "Enter") abrirConClave(); });
+  $("#btnSaltearClave").addEventListener("click", () => mostrarCandado(false));
+  window.addEventListener("beforeprint", () => {
+    document.title = "Asistencia 2026 — " + (
+      !$("#v-alumno").classList.contains("oculto")
+        ? (IDX.alumnoPorId[$("#selAlumno").value] || {}).nombre || ""
+        : !$("#v-curso").classList.contains("oculto")
+          ? (IDX.cursoPorId[$("#selCursoRep").value] || {}).etiqueta || ""
+          : "");
+  });
+}
+iniciar();
+</script>
+</body>
+</html>

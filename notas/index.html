@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Notas">
+<meta name="format-detection" content="telephone=no">
+<title>Notas 2026</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231d4ed8'/%3E%3Ctext x='32' y='45' font-size='34' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E10%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest"><meta name="robots" content="noindex, nofollow">
+<style>
+
+:root{
+  --p:#059669; --p-bg:#d1fae5;
+  --t:#d97706; --t-bg:#fef3c7;
+  --a:#dc2626; --a-bg:#fee2e2;
+  --j:#2563eb; --j-bg:#dbeafe;
+  --tinta:#0f172a; --suave:#64748b; --borde:#e2e8f0;
+  --fondo:#f1f5f9; --panel:#fff; --acento:#0f766e;
+  --radio:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,select,input{touch-action:manipulation}
+body{
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color:var(--tinta); background:var(--fondo);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+h1,h2,h3{margin:0 0 .4em;line-height:1.25}
+h1{font-size:1.25rem}
+h2{font-size:1.05rem}
+h3{font-size:.95rem}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+select,input{font:inherit;color:inherit}
+
+/* ---------- estructura ---------- */
+header{
+  position:sticky;top:0;z-index:50;background:var(--acento);color:#fff;
+  padding:10px 14px calc(10px + env(safe-area-inset-top)) 14px;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  box-shadow:0 2px 8px rgba(0,0,0,.12)
+}
+.barra-sup{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.barra-sup .titulo{font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+.barra-sup .titulo small{font-weight:600;font-size:.7rem;opacity:.75;letter-spacing:0;
+  margin-left:6px;white-space:nowrap}
+nav{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{
+  padding:8px 13px;border-radius:999px;font-size:.88rem;font-weight:600;
+  color:#d1faf3;background:rgba(255,255,255,.13);white-space:nowrap
+}
+nav button[aria-current="true"]{background:#fff;color:var(--acento)}
+main{padding:14px;max-width:940px;margin:0 auto}
+.panel{background:var(--panel);border-radius:var(--radio);padding:14px;margin-bottom:14px;
+  box-shadow:0 1px 3px rgba(15,23,42,.07)}
+.oculto{display:none !important}
+
+/* ---------- controles ---------- */
+.campos{display:flex;gap:10px;flex-wrap:wrap}
+.campo{flex:1 1 180px;min-width:0}
+label.et{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--suave);font-weight:700;margin-bottom:4px}
+select,input[type=date],input[type=text],input[type=number]{
+  width:100%;padding:11px 12px;border:1.5px solid var(--borde);border-radius:10px;
+  background:#fff;min-height:46px
+}
+select:focus,input:focus{outline:2px solid var(--acento);outline-offset:1px;border-color:var(--acento)}
+
+/* ---------- toma de lista ---------- */
+.resumen{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.chip{padding:6px 12px;border-radius:999px;font-size:.85rem;font-weight:700}
+.chip.p{background:var(--p-bg);color:#065f46}
+.chip.t{background:var(--t-bg);color:#92400e}
+.chip.a{background:var(--a-bg);color:#991b1b}
+.chip.j{background:var(--j-bg);color:#1e40af}
+.chip.n{background:#e2e8f0;color:#475569}
+
+.fila{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--borde)}
+.fila:last-child{border-bottom:0}
+.fila .nom{flex:1;min-width:0;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.fila .nom small{display:block;font-weight:500;color:var(--suave);font-size:.75rem}
+.estados{display:flex;gap:5px;flex-shrink:0}
+.estados button{
+  width:44px;height:44px;border-radius:11px;font-weight:800;font-size:.95rem;
+  background:#f1f5f9;color:#94a3b8;border:1.5px solid transparent;transition:transform .06s
+}
+.estados button:active{transform:scale(.93)}
+.estados button[aria-pressed="true"][data-e="0"]{background:var(--p);color:#fff}
+.estados button[aria-pressed="true"][data-e="1"]{background:var(--t);color:#fff}
+.estados button[aria-pressed="true"][data-e="2"]{background:var(--a);color:#fff}
+.estados button[aria-pressed="true"][data-e="3"]{background:var(--j);color:#fff}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 18px;border-radius:12px;font-weight:700;background:var(--acento);color:#fff;
+  min-height:48px}
+.btn.sec{background:#e2e8f0;color:#334155}
+.btn.peligro{background:#dc2626;color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.guardar-fijo{position:sticky;bottom:0;background:linear-gradient(transparent,var(--fondo) 32%);
+  padding:14px 0 calc(10px + env(safe-area-inset-bottom));margin-top:8px}
+.guardar-fijo .btn{width:100%;font-size:1.05rem}
+
+/* ---------- avisos ---------- */
+.aviso{padding:10px 12px;border-radius:10px;font-size:.87rem;margin:10px 0}
+.aviso.ok{background:var(--p-bg);color:#065f46}
+.aviso.info{background:#e0f2fe;color:#075985}
+.aviso.alerta{background:var(--t-bg);color:#92400e}
+.aviso.mal{background:var(--a-bg);color:#991b1b}
+
+/* ---------- informes ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0}
+.kpi{background:#f8fafc;border:1px solid var(--borde);border-radius:12px;padding:11px 12px}
+.kpi .v{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.kpi .e{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);font-weight:700;margin-top:3px}
+.kpi.p .v{color:var(--p)} .kpi.t .v{color:var(--t)}
+.kpi.a .v{color:var(--a)} .kpi.j .v{color:var(--j)}
+
+.tabla-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--borde);white-space:nowrap}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);
+  font-weight:700;background:#f8fafc;position:sticky;top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.riesgo td{background:#fff5f5}
+/* el nombre puede envolver, pero nunca partirse al medio de una palabra */
+td .nombre-alumno{white-space:normal;overflow-wrap:break-word;word-break:normal}
+td.col-nombre{min-width:150px}
+
+.barra{height:9px;border-radius:5px;background:#e2e8f0;overflow:hidden;min-width:70px}
+.barra i{display:block;height:100%;border-radius:5px;background:var(--p)}
+.barra i.bajo{background:var(--a)}
+.barra i.medio{background:var(--t)}
+
+.franja{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:.87rem}
+.franja .et2{width:88px;flex-shrink:0;color:var(--suave);font-weight:600;font-size:.8rem}
+.franja .b{flex:1;height:20px;background:#f1f5f9;border-radius:5px;overflow:hidden}
+.franja .b i{display:block;height:100%;background:var(--acento)}
+.franja .c{width:74px;flex-shrink:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+
+.lista-fechas{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{padding:5px 10px;border-radius:8px;font-size:.8rem;background:#f1f5f9;
+  font-variant-numeric:tabular-nums}
+.pill.a{background:var(--a-bg);color:#991b1b;font-weight:600}
+.pill.t{background:var(--t-bg);color:#92400e;font-weight:600}
+.pill.j{background:var(--j-bg);color:#1e40af;font-weight:600}
+
+/* ---------- corregir alumnos ---------- */
+.gfila{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap}
+.gfila:last-child{border-bottom:0}
+.gfila .gnom{flex:1 1 140px;min-width:0;font-weight:600;font-size:.9rem;overflow-wrap:break-word}
+.gfila .gnom small{display:block;font-weight:500;color:var(--suave);font-size:.74rem}
+.gacc{display:flex;gap:5px;flex-shrink:0}
+.gacc button{padding:8px 11px;border-radius:9px;background:#f1f5f9;color:#475569;
+  font-size:.8rem;font-weight:700;min-height:40px}
+.gacc button.mal{background:var(--a-bg);color:#991b1b}
+.gedit{flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap;padding:8px 0 4px}
+.gedit input,.gedit select{flex:1 1 160px;min-height:42px}
+.gedit button{padding:10px 14px;border-radius:9px;font-weight:700;background:var(--acento);color:#fff}
+.gedit button.sec{background:#e2e8f0;color:#334155}
+.gedit button.mal{background:#dc2626;color:#fff}
+
+.sep{height:1px;background:var(--borde);margin:16px 0}
+.nota-pie{font-size:.78rem;color:var(--suave);margin-top:6px}
+.reservado{border:1.5px dashed var(--borde);border-radius:12px;padding:16px;
+  color:var(--suave);font-size:.85rem;text-align:center}
+
+/* ---------- pantalla de desbloqueo ---------- */
+.candado{position:fixed;inset:0;z-index:200;background:var(--acento);
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.candado-caja{background:var(--panel);border-radius:18px;padding:26px 22px;
+  max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.candado-icono{font-size:2.4rem;line-height:1;margin-bottom:6px}
+.candado-caja h1{margin-bottom:10px}
+.candado-texto{color:var(--suave);font-size:.9rem;margin:0 0 18px}
+.candado-caja input{margin-bottom:10px;text-align:center;font-size:1.05rem}
+.candado-caja .btn{width:100%}
+.candado-caja .btn.sec{margin-top:14px;font-size:.85rem;min-height:40px;padding:8px 12px}
+.candado-caja .nota-pie{margin-top:16px;text-align:left}
+
+/* ---------- celular ----------
+   En pantalla angosta el nombre del alumno es lo que más se aprieta: se recorta
+   todo lo que rodea a la fila para devolverle ancho, sin bajar los botones de
+   estado de 42px, que es lo mínimo para tocar con el dedo estando parado. */
+@media (max-width:430px){
+  main{padding:8px}
+  .panel{padding:10px;border-radius:12px;margin-bottom:10px}
+  header{padding-left:10px;padding-right:10px}
+  .fila{padding:7px 0;gap:8px}
+  .fila .nom{font-size:.92rem;line-height:1.3}
+  .fila .nom small{font-size:.72rem}
+  .estados{gap:4px}
+  .estados button{width:42px;height:42px;border-radius:10px}
+  .resumen{gap:6px;margin:10px 0 2px}
+  .chip{padding:5px 9px;font-size:.78rem}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+  .kpi{padding:9px 10px}
+  .kpi .v{font-size:1.3rem}
+  .kpi .e{font-size:.66rem}
+  .franja .et2{width:66px;font-size:.74rem}
+  .franja .c{width:62px;font-size:.82rem}
+  h1{font-size:1.15rem}
+  .acciones{gap:8px}
+  .btn{padding:12px 14px;flex:1 1 auto}
+  table{font-size:.82rem}
+  th,td{padding:7px 8px}
+}
+@media (max-width:340px){
+  .estados button{width:38px;height:42px;font-size:.9rem}
+  .fila .nom{font-size:.88rem}
+}
+
+/* ---------- impresión ---------- */
+@media print{
+  @page{margin:12mm}
+  header,nav,.no-print,.guardar-fijo,.acciones{display:none !important}
+  body{background:#fff;font-size:11pt}
+  main{max-width:none;padding:0}
+  .panel{box-shadow:none;border:1px solid #cbd5e1;page-break-inside:avoid;margin-bottom:10px}
+  .kpi{border:1px solid #cbd5e1}
+  th{background:#f1f5f9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .chip,.pill,.barra i,.franja .b i,.kpi .v{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tabla-wrap{overflow:visible}
+  table{font-size:9.5pt}
+  .solo-print{display:block !important}
+}
+.solo-print{display:none}
+
+
+/* ---------- propio de notas ---------- */
+:root{ --acento:#1d4ed8; }
+
+.nota-fila{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--borde)}
+.nota-fila:last-child{border-bottom:0}
+.nota-fila .quien{flex:1;min-width:0;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.nota-fila .quien small{display:block;font-weight:500;color:var(--suave);font-size:.75rem}
+.nota-fila input.nota{width:62px;height:48px;text-align:center;font-size:1.15rem;font-weight:700;
+  border:1.5px solid var(--borde);border-radius:11px;flex-shrink:0}
+.nota-fila input.nota:focus{outline:2px solid var(--acento);border-color:var(--acento)}
+.nota-fila input.nota.puesta{background:#eff6ff;border-color:#bfdbfe}
+
+.cond-fila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap}
+.cond-fila:last-child{border-bottom:0}
+.cond-fila .quien{flex:1 1 150px;min-width:0;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.cond-valor{font-size:1.4rem;font-weight:800;width:44px;text-align:center;flex-shrink:0}
+.cond-valor.bien{color:var(--p)} .cond-valor.medio{color:var(--t)} .cond-valor.mal{color:var(--a)}
+.cond-acc{display:flex;gap:5px;flex-shrink:0}
+.cond-acc button{min-width:44px;height:44px;border-radius:11px;background:#f1f5f9;
+  color:#475569;font-weight:800;font-size:1rem;padding:0 10px}
+.cond-acc button.menos{background:var(--a-bg);color:#991b1b}
+.cond-acc button.mas{background:var(--p-bg);color:#065f46}
+.cond-form{flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap;padding:10px 0 4px;
+  border-top:1px dashed var(--borde);margin-top:6px}
+.cond-form input,.cond-form select{flex:1 1 150px;min-height:44px}
+.cond-form .btn{flex:0 0 auto}
+.episodio{display:flex;gap:10px;align-items:baseline;padding:6px 0;font-size:.87rem;
+  border-bottom:1px solid var(--borde)}
+.episodio:last-child{border-bottom:0}
+.episodio .cuando{color:var(--suave);font-size:.78rem;white-space:nowrap;width:64px;flex-shrink:0}
+.episodio .delta{font-weight:800;width:34px;flex-shrink:0;text-align:right}
+.episodio .delta.baja{color:var(--a)} .episodio .delta.sube{color:var(--p)}
+.episodio .porque{flex:1;overflow-wrap:anywhere}
+
+.recuadro{border:1.5px solid var(--borde);border-radius:12px;padding:12px;margin:10px 0}
+.recuadro h3{margin-bottom:8px}
+.final{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.final input{width:84px;height:52px;text-align:center;font-size:1.3rem;font-weight:800;
+  border:2px solid var(--acento);border-radius:12px}
+.final .calculado{font-size:.88rem;color:var(--suave)}
+.marca-mano{display:inline-block;background:var(--t-bg);color:#92400e;border-radius:999px;
+  padding:3px 10px;font-size:.74rem;font-weight:700}
+</style>
+</head>
+<body>
+
+<div id="candado" class="candado oculto">
+  <div class="candado-caja">
+    <div class="candado-icono">🔒</div>
+    <h1>Notas 2026</h1>
+    <p class="candado-texto">Escribí tu contraseña para cargar los datos en este dispositivo.</p>
+    <input type="password" id="clave" autocomplete="current-password" placeholder="Contraseña">
+    <button class="btn" id="btnAbrir">Abrir</button>
+    <div id="avisoClave"></div>
+    <button class="btn sec" id="btnSaltearClave">Entrar sin cargar nada</button>
+  </div>
+</div>
+
+<header>
+  <div class="barra-sup">
+    <span class="titulo">Notas 2026 <small id="sello"></small></span>
+    <span id="estadoGuardado" style="font-size:.78rem;opacity:.85"></span>
+  </div>
+  <nav id="nav">
+    <button data-v="cargar" aria-current="true">Cargar notas</button>
+    <button data-v="conducta">Conducta</button>
+    <button data-v="alumno">Informe alumno</button>
+    <button data-v="curso">Informe curso</button>
+    <button data-v="datos">Datos</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ CARGAR NOTAS ============ -->
+<section id="v-cargar">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="selCurso">Curso</label>
+        <select id="selCurso"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="selItem">Trabajo o evaluación</label>
+        <select id="selItem"></select>
+      </div>
+    </div>
+    <div class="resumen" id="resumenCargar"></div>
+    <div id="avisoCargar"></div>
+  </div>
+
+  <div class="panel">
+    <div id="listaNotas"></div>
+    <div class="acciones no-print">
+      <button class="btn sec" id="btnNuevoItem">Agregar trabajo</button>
+    </div>
+  </div>
+
+  <div class="guardar-fijo no-print">
+    <button class="btn" id="btnGuardarNotas">Guardar notas</button>
+  </div>
+</section>
+
+<!-- ============ CONDUCTA ============ -->
+<section id="v-conducta" class="oculto">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="condCurso">Curso</label>
+        <select id="condCurso"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="condCuat">Cuatrimestre</label>
+        <select id="condCuat">
+          <option value="1">1er cuatrimestre</option>
+          <option value="2">2do cuatrimestre</option>
+        </select>
+      </div>
+    </div>
+    <p class="nota-pie">Todos arrancan en 10. Cada episodio suma o resta, y queda con su fecha y
+      su motivo, así la nota queda justificada. Escribí solo lo que pasó en el aula: nada de
+      salud ni de situación familiar.</p>
+    <div id="avisoConducta"></div>
+  </div>
+  <div class="panel"><div id="listaConducta"></div></div>
+</section>
+
+<!-- ============ INFORME ALUMNO ============ -->
+<section id="v-alumno" class="oculto">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="alCurso">Curso</label>
+        <select id="alCurso"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="alAlumno">Alumno</label>
+        <select id="alAlumno"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="alCuat">Cuatrimestre</label>
+        <select id="alCuat">
+          <option value="1">1er cuatrimestre</option>
+          <option value="2">2do cuatrimestre</option>
+        </select>
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnImprimirAlumno">Imprimir / Guardar PDF</button>
+      <button class="btn sec" id="btnSinNotas">Imprimir sin calificaciones</button>
+    </div>
+  </div>
+  <div id="fichaAlumno"></div>
+</section>
+
+<!-- ============ INFORME CURSO ============ -->
+<section id="v-curso" class="oculto">
+  <div class="panel no-print">
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="cuCurso">Curso</label>
+        <select id="cuCurso"></select>
+      </div>
+      <div class="campo">
+        <label class="et" for="cuCuat">Cuatrimestre</label>
+        <select id="cuCuat">
+          <option value="1">1er cuatrimestre</option>
+          <option value="2">2do cuatrimestre</option>
+        </select>
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnImprimirCurso">Imprimir / Guardar PDF</button>
+    </div>
+  </div>
+  <div id="fichaCurso"></div>
+</section>
+
+<!-- ============ DATOS ============ -->
+<section id="v-datos" class="oculto">
+  <div class="panel" id="panelNube">
+    <h2>Sincronización</h2>
+    <p class="nota-pie">Comparte servidor con la app de asistencia: los mismos alumnos, la misma
+      llave. Lo que viaja está cifrado.</p>
+    <div id="estadoNube"></div>
+    <div class="acciones">
+      <button class="btn" id="btnSincronizar">Sincronizar ahora</button>
+      <button class="btn sec" id="btnSubirTodo">Subir todo de nuevo</button>
+    </div>
+    <div id="avisoNube"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Trabajos y evaluaciones</h2>
+    <p class="nota-pie">Cada curso tiene los suyos. Agregá los que vayas tomando.</p>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="gItemCurso">Curso</label>
+        <select id="gItemCurso"></select>
+      </div>
+    </div>
+    <div id="listaItems"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Copia de seguridad</h2>
+    <div class="acciones">
+      <button class="btn" id="btnBackup">Descargar copia</button>
+      <button class="btn sec" id="btnRestaurar">Restaurar desde copia</button>
+      <input type="file" id="fileRestaurar" accept="application/json,.json" class="oculto">
+      <button class="btn sec" id="btnCsv">Exportar a Excel (CSV)</button>
+    </div>
+    <div id="avisoDatos"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Estado actual</h2>
+    <div id="estadoDatos"></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+
+const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
+const CIFRADO = null;
+const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
+const VERSION = "02/08 21:07";
+
+const CLAVE_LS = "notas2026";
+const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
+
+/* ---------------- utilidades ---------------- */
+const $ = (s) => document.querySelector(s);
+const crear = (t, p = {}) => Object.assign(document.createElement(t), p);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const deB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const aB64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b)));
+
+function hoyISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function fechaLarga(iso) { const [a, m, d] = iso.split("-"); return `${d}/${m}/${a}`; }
+function fechaCorta(iso) { const [a, m, d] = iso.split("-"); return `${d}/${m}`; }
+/** Redondeo con el 0,5 para arriba: es el que venías usando en la planilla. */
+function redondear(x) { return Math.floor(x + 0.5); }
+
+/* ---------------- estado ---------------- */
+let D = null;
+
+function desdeSemilla(S) {
+  S = S || SEMILLA;
+  return {
+    cursos: JSON.parse(JSON.stringify(S.cursos || [])),
+    alumnos: JSON.parse(JSON.stringify(S.alumnos || [])),
+    items: JSON.parse(JSON.stringify(S.items || [])),
+    notas: JSON.parse(JSON.stringify(S.notas || [])),
+    conducta: JSON.parse(JSON.stringify(S.conducta || [])),
+    manual: JSON.parse(JSON.stringify(S.manual || [])),
+    asistencia: {},          // se llena desde la nube, solo para la ficha combinada
+    editado: {}, sync: {}, bajas: {},
+    config: Object.assign({ escalaMin: 1, escalaMax: 10, conductaInicial: 10,
+                            conductaEnPromedio: 1 }, S.config || {}),
+  };
+}
+
+function cargar() {
+  try {
+    const crudo = localStorage.getItem(CLAVE_LS);
+    if (crudo) {
+      const d = JSON.parse(crudo);
+      if (d && d.alumnos && d.items) {
+        for (const k of ["asistencia", "editado", "sync", "bajas"]) d[k] = d[k] || {};
+        for (const k of ["notas", "conducta", "manual"]) d[k] = d[k] || [];
+        return d;
+      }
+    }
+  } catch (e) { /* guardado corrupto: se arranca de la semilla */ }
+  return desdeSemilla();
+}
+
+let pendienteGuardar = null;
+function guardar() {
+  clearTimeout(pendienteGuardar);
+  pendienteGuardar = setTimeout(() => {
+    try {
+      localStorage.setItem(CLAVE_LS, JSON.stringify(D));
+      marcarGuardado("Guardado");
+    } catch (e) { marcarGuardado("No se pudo guardar", true); }
+  }, 120);
+}
+function marcarGuardado(txt, mal) {
+  const el = $("#estadoGuardado");
+  el.textContent = txt; el.style.color = mal ? "#fecaca" : "";
+  clearTimeout(marcarGuardado._t);
+  marcarGuardado._t = setTimeout(() => { el.textContent = ""; }, 2600);
+}
+
+/* ---------------- índices ---------------- */
+let IDX = null;
+function reindexar() {
+  const porCurso = {}, alumnoPorId = {}, cursoPorId = {}, itemsPorCurso = {}, itemPorId = {};
+  for (const c of D.cursos) { cursoPorId[c.id] = c; porCurso[c.id] = []; itemsPorCurso[c.id] = []; }
+  for (const a of D.alumnos) {
+    alumnoPorId[a.id] = a;
+    if (porCurso[a.curso]) porCurso[a.curso].push(a);
+  }
+  for (const id in porCurso) porCurso[id].sort((x, y) => x.nombre.localeCompare(y.nombre, "es"));
+  for (const i of D.items) {
+    itemPorId[i.id] = i;
+    if (itemsPorCurso[i.curso]) itemsPorCurso[i.curso].push(i);
+  }
+  for (const id in itemsPorCurso) {
+    itemsPorCurso[id].sort((a, b) => (a.cuatrimestre - b.cuatrimestre) || (a.orden - b.orden));
+  }
+  const nota = {};
+  for (const n of D.notas) nota[n.alumno + "|" + n.item] = n.valor;
+  const manual = {};
+  for (const m of D.manual) manual[m.alumno + "|" + m.cuatrimestre] = m.valor;
+  IDX = { porCurso, alumnoPorId, cursoPorId, itemsPorCurso, itemPorId, nota, manual };
+}
+
+/* ---------------- cálculo ---------------- */
+
+/** Conducta de un alumno en un cuatrimestre: 10 más lo que sumen o resten
+ *  los episodios, sin pasarse de la escala. */
+function conductaDe(alumnoId, cuat) {
+  let v = D.config.conductaInicial;
+  for (const e of D.conducta) {
+    if (e.alumno === alumnoId && +e.cuatrimestre === +cuat) v += e.delta;
+  }
+  return Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, v));
+}
+
+function episodiosDe(alumnoId, cuat) {
+  return D.conducta
+    .filter((e) => e.alumno === alumnoId && +e.cuatrimestre === +cuat)
+    .sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+}
+
+/** Los valores que entran al promedio del cuatrimestre. */
+function valoresDe(alumnoId, cuat) {
+  const al = IDX.alumnoPorId[alumnoId];
+  if (!al) return [];
+  const vals = [];
+  for (const it of (IDX.itemsPorCurso[al.curso] || [])) {
+    if (+it.cuatrimestre !== +cuat) continue;
+    if (it.tipo === "conducta") {
+      if (D.config.conductaEnPromedio) vals.push({ item: it, valor: conductaDe(alumnoId, cuat) });
+      continue;
+    }
+    const v = IDX.nota[alumnoId + "|" + it.id];
+    if (v !== undefined) vals.push({ item: it, valor: v });
+  }
+  return vals;
+}
+
+function promedioDe(alumnoId, cuat) {
+  const v = valoresDe(alumnoId, cuat);
+  if (!v.length) return null;
+  return v.reduce((t, x) => t + x.valor, 0) / v.length;
+}
+
+/** La nota del cuatrimestre: la calculada, salvo que la hayas escrito vos. */
+function notaCuatrimestre(alumnoId, cuat) {
+  const m = IDX.manual[alumnoId + "|" + cuat];
+  const prom = promedioDe(alumnoId, cuat);
+  const calc = prom === null ? null : redondear(prom);
+  return { valor: m !== undefined ? m : calc, calculado: calc, promedio: prom,
+           aMano: m !== undefined };
+}
+
+/* ---------------- navegación ---------------- */
+const VISTAS = ["cargar", "conducta", "alumno", "curso", "datos"];
+function mostrar(v) {
+  for (const x of VISTAS) $("#v-" + x).classList.toggle("oculto", x !== v);
+  for (const b of $("#nav").children) b.setAttribute("aria-current", String(b.dataset.v === v));
+  if (v === "cargar") pintarCargar();
+  if (v === "conducta") pintarConducta();
+  if (v === "alumno") pintarAlumno();
+  if (v === "curso") pintarCurso();
+  if (v === "datos") pintarDatos();
+}
+$("#nav").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-v]");
+  if (b) mostrar(b.dataset.v);
+});
+
+function llenarCursos(sel, valor) {
+  sel.innerHTML = "";
+  for (const c of D.cursos) sel.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
+  if (valor && D.cursos.some((c) => c.id === valor)) sel.value = valor;
+}
+
+/* ================= CARGAR NOTAS ================= */
+let borrador = {};
+
+function llenarItems() {
+  const cid = $("#selCurso").value, sel = $("#selItem"), previo = sel.value;
+  sel.innerHTML = "";
+  for (const it of (IDX.itemsPorCurso[cid] || [])) {
+    sel.appendChild(crear("option", { value: it.id,
+      textContent: `C${it.cuatrimestre} · ${it.nombre}` }));
+  }
+  if (previo && [...sel.options].some((o) => o.value === previo)) sel.value = previo;
+}
+
+function pintarCargar() {
+  const cid = $("#selCurso").value;
+  const it = IDX.itemPorId[$("#selItem").value];
+  const cont = $("#listaNotas");
+  const alumnos = IDX.porCurso[cid] || [];
+  cont.innerHTML = "";
+  $("#avisoCargar").innerHTML = "";
+
+  if (!D.items.length && !alumnos.length) {
+    cont.innerHTML = `<p class="aviso info">Todavía no hay datos en este dispositivo.</p>`;
+    return;
+  }
+  if (!it) {
+    cont.innerHTML = `<p class="aviso info"><strong>Este curso no tiene trabajos cargados.</strong><br>
+      Tocá <strong>Agregar trabajo</strong> para crear el primero.</p>`;
+    $("#resumenCargar").innerHTML = "";
+    return;
+  }
+  if (it.tipo === "conducta") {
+    cont.innerHTML = `<p class="aviso info">La conducta no se carga acá: se arma con episodios.
+      Andá a la pestaña <strong>Conducta</strong>.</p>`;
+    $("#resumenCargar").innerHTML = "";
+    return;
+  }
+
+  borrador = {};
+  for (const a of alumnos) {
+    const v = IDX.nota[a.id + "|" + it.id];
+    borrador[a.id] = v === undefined ? "" : v;
+    const prom = promedioDe(a.id, it.cuatrimestre);
+    const fila = crear("div", { className: "nota-fila" });
+    fila.innerHTML = `<div class="quien">${esc(a.nombre)}
+      <small>${prom === null ? "sin notas todavía" : "promedio " + prom.toFixed(1)}</small></div>`;
+    const inp = crear("input", { type: "number", className: "nota" + (v !== undefined ? " puesta" : ""),
+      value: borrador[a.id], inputMode: "numeric" });
+    inp.min = D.config.escalaMin; inp.max = D.config.escalaMax; inp.step = 1;
+    inp.dataset.a = a.id;
+    fila.appendChild(inp);
+    cont.appendChild(fila);
+  }
+  pintarResumenCargar();
+}
+
+function pintarResumenCargar() {
+  const it = IDX.itemPorId[$("#selItem").value];
+  if (!it) return;
+  const vals = Object.values(borrador).filter((v) => v !== "" && v !== null).map(Number);
+  const prom = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+  const total = (IDX.porCurso[$("#selCurso").value] || []).length;
+  $("#resumenCargar").innerHTML =
+    `<span class="chip p">${vals.length} con nota</span>` +
+    `<span class="chip n">${total - vals.length} sin cargar</span>` +
+    (prom !== null ? `<span class="chip j">promedio ${prom.toFixed(2)}</span>` : "");
+}
+
+$("#listaNotas").addEventListener("input", (ev) => {
+  const inp = ev.target.closest("input.nota");
+  if (!inp) return;
+  let v = inp.value.trim();
+  if (v !== "") {
+    let n = Math.round(Number(v));
+    if (isNaN(n)) { v = ""; }
+    else { n = Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, n)); v = String(n); }
+    if (inp.value !== v) inp.value = v;
+  }
+  borrador[inp.dataset.a] = v === "" ? "" : Number(v);
+  inp.classList.toggle("puesta", v !== "");
+  pintarResumenCargar();
+});
+
+$("#btnGuardarNotas").addEventListener("click", () => {
+  const it = IDX.itemPorId[$("#selItem").value];
+  if (!it || it.tipo === "conducta") return;
+  let puestas = 0, borradas = 0;
+  D.notas = D.notas.filter((n) => n.item !== it.id);
+  for (const aid in borrador) {
+    const v = borrador[aid];
+    if (v === "" || v === null) { borradas++; continue; }
+    D.notas.push({ alumno: aid, item: it.id, valor: Number(v) });
+    puestas++;
+  }
+  marcarEdicion("n|" + it.id);
+  guardar(); reindexar(); pintarCargar(); sincronizarDespues();
+  alerta("#avisoCargar", `Guardado ${it.nombre}: ${puestas} notas.`, "ok");
+});
+
+$("#selCurso").addEventListener("change", () => { llenarItems(); pintarCargar(); });
+$("#selItem").addEventListener("change", pintarCargar);
+
+$("#btnNuevoItem").addEventListener("click", () => {
+  const cid = $("#selCurso").value;
+  const nombre = prompt("¿Cómo se llama el trabajo o la evaluación?");
+  if (!nombre || !nombre.trim()) return;
+  const cuat = prompt("¿De qué cuatrimestre? Escribí 1 o 2", "1");
+  const c = cuat === "2" ? 2 : 1;
+  const propios = (IDX.itemsPorCurso[cid] || []).filter((i) => i.cuatrimestre === c);
+  D.items.push({
+    id: nuevoId("I", D.items.map((i) => i.id)),
+    curso: cid, cuatrimestre: c, orden: propios.length + 1,
+    nombre: nombre.trim().replace(/\s+/g, " "), tipo: "trabajo",
+  });
+  marcarEdicion("items");
+  guardar(); reindexar(); llenarItems();
+  $("#selItem").value = D.items[D.items.length - 1].id;
+  pintarCargar(); sincronizarDespues();
+});
+
+function nuevoId(prefijo, existentes) {
+  const usados = new Set(existentes);
+  for (const id in (D.bajas || {})) usados.add(id);
+  let n = 1;
+  while (usados.has(prefijo + String(n).padStart(3, "0"))) n++;
+  return prefijo + String(n).padStart(3, "0");
+}
+
+function alerta(sel, txt, tipo) {
+  const el = $(sel);
+  if (el) el.innerHTML = `<div class="aviso ${tipo}">${esc(txt)}</div>`;
+}
+
+/* ================= CONDUCTA ================= */
+let condAbierta = null;
+
+function pintarConducta() {
+  const cid = $("#condCurso").value, cuat = +$("#condCuat").value;
+  const cont = $("#listaConducta");
+  const alumnos = IDX.porCurso[cid] || [];
+  if (!alumnos.length) { cont.innerHTML = `<p class="aviso info">Este curso no tiene alumnos.</p>`; return; }
+
+  let h = "";
+  for (const a of alumnos) {
+    const v = conductaDe(a.id, cuat);
+    const eps = episodiosDe(a.id, cuat);
+    const clase = v >= 9 ? "bien" : v >= 7 ? "medio" : "mal";
+    const abierta = condAbierta === a.id;
+    h += `<div class="cond-fila" data-a="${a.id}">
+      <div class="quien">${esc(a.nombre)}
+        <small>${eps.length ? eps.length + (eps.length === 1 ? " episodio" : " episodios") : "sin episodios"}</small></div>
+      <div class="cond-valor ${clase}">${v}</div>
+      <div class="cond-acc">
+        <button data-acc="menos" class="menos" title="Restar">−</button>
+        <button data-acc="mas" class="mas" title="Sumar">+</button>
+        <button data-acc="ver">${abierta ? "Cerrar" : "Ver"}</button>
+      </div>`;
+    if (abierta) {
+      h += `<div class="cond-form">
+        <input type="date" id="condFecha" value="${hoyISO()}">
+        <input type="text" id="condMotivo" placeholder="Qué pasó en clase" maxlength="120">
+        <select id="condDelta">
+          <option value="-1">resta 1</option>
+          <option value="-2">resta 2</option>
+          <option value="-3">resta 3</option>
+          <option value="-0.5">resta ½</option>
+          <option value="1">suma 1</option>
+          <option value="2">suma 2</option>
+        </select>
+        <button class="btn" data-acc="agregar">Agregar</button>
+      </div>`;
+      if (eps.length) {
+        h += `<div style="flex:1 1 100%">`;
+        for (let i = 0; i < eps.length; i++) {
+          const e = eps[i];
+          h += `<div class="episodio">
+            <span class="cuando">${e.fecha ? fechaCorta(e.fecha) : "—"}</span>
+            <span class="delta ${e.delta < 0 ? "baja" : "sube"}">${e.delta > 0 ? "+" : ""}${e.delta}</span>
+            <span class="porque">${esc(e.motivo || "")}</span>
+            <button data-acc="quitar" data-i="${D.conducta.indexOf(e)}"
+              style="color:var(--a);font-weight:700;padding:0 6px">quitar</button>
+          </div>`;
+        }
+        h += `</div>`;
+      }
+    }
+    h += `</div>`;
+  }
+  cont.innerHTML = h;
+  const m = $("#condMotivo"); if (m) m.focus();
+}
+
+$("#listaConducta").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-acc]");
+  if (!b) return;
+  const cid = $("#condCurso").value, cuat = +$("#condCuat").value;
+  const aid = b.closest(".cond-fila").dataset.a;
+  const acc = b.dataset.acc;
+
+  if (acc === "ver") { condAbierta = condAbierta === aid ? null : aid; pintarConducta(); return; }
+  if (acc === "menos" || acc === "mas") {
+    condAbierta = aid; pintarConducta();
+    const sel = $("#condDelta"); if (sel) sel.value = acc === "menos" ? "-1" : "1";
+    return;
+  }
+  if (acc === "quitar") {
+    D.conducta.splice(+b.dataset.i, 1);
+    marcarEdicion("c|" + cid + "|" + cuat);
+    guardar(); reindexar(); pintarConducta(); sincronizarDespues();
+    return;
+  }
+  if (acc === "agregar") {
+    const motivo = $("#condMotivo").value.trim();
+    const delta = Number($("#condDelta").value);
+    if (!motivo) { alerta("#avisoConducta", "Escribí qué pasó, aunque sea corto.", "mal"); return; }
+    D.conducta.push({ alumno: aid, cuatrimestre: cuat, fecha: $("#condFecha").value || hoyISO(),
+                      motivo: motivo.slice(0, 120), delta });
+    marcarEdicion("c|" + cid + "|" + cuat);
+    guardar(); reindexar(); pintarConducta(); sincronizarDespues();
+    const nom = IDX.alumnoPorId[aid].nombre;
+    alerta("#avisoConducta", `${nom}: conducta ${conductaDe(aid, cuat)}.`, "ok");
+  }
+});
+
+$("#condCurso").addEventListener("change", () => { condAbierta = null; pintarConducta(); });
+$("#condCuat").addEventListener("change", () => { condAbierta = null; pintarConducta(); });
+
+/* ================= INFORME ALUMNO ================= */
+function llenarAlumnos() {
+  const cid = $("#alCurso").value, sel = $("#alAlumno"), previo = sel.value;
+  sel.innerHTML = "";
+  for (const a of (IDX.porCurso[cid] || [])) {
+    sel.appendChild(crear("option", { value: a.id, textContent: a.nombre }));
+  }
+  if (previo && [...sel.options].some((o) => o.value === previo)) sel.value = previo;
+}
+
+let imprimirSinNotas = false;
+
+function pintarAlumno() {
+  const al = IDX.alumnoPorId[$("#alAlumno").value];
+  const cont = $("#fichaAlumno");
+  if (!al) { cont.innerHTML = `<div class="panel"><p class="aviso info">Elegí un alumno.</p></div>`; return; }
+  const cuat = +$("#alCuat").value;
+  const c = IDX.cursoPorId[al.curso];
+  const nc = notaCuatrimestre(al.id, cuat);
+  const vals = valoresDe(al.id, cuat);
+
+  let h = `<div class="panel">
+    <h1>${esc(al.nombre)}</h1>
+    <p class="nota-pie" style="margin-top:-4px">${esc(c.etiqueta)} · ${cuat}º cuatrimestre ·
+      generado el ${fechaLarga(hoyISO())}</p>`;
+
+  /* asistencia, si la app la bajó del servidor */
+  const asis = asistenciaDe(al.id);
+  if (asis) {
+    h += `<div class="kpis">
+      <div class="kpi"><div class="v">${asis.pct === null ? "—" : asis.pct.toFixed(1) + "%"}</div>
+        <div class="e">Asistencia</div></div>
+      <div class="kpi"><div class="v">${asis.medidas}</div><div class="e">Clases medidas</div></div>
+      <div class="kpi p"><div class="v">${asis.asistidas}</div><div class="e">Asistió</div></div>
+      <div class="kpi a"><div class="v">${asis.ausentes}</div><div class="e">Faltó</div></div>
+      <div class="kpi t"><div class="v">${asis.tardes}</div><div class="e">Tarde</div></div>
+    </div>`;
+  }
+
+  if (!imprimirSinNotas) {
+    h += `<div class="sep"></div><h3>Trabajos y evaluaciones</h3>`;
+    if (!vals.length) {
+      h += `<p class="aviso info">Todavía no tiene ninguna nota en este cuatrimestre.</p>`;
+    } else {
+      h += `<div class="tabla-wrap"><table>
+        <tr><th>Ítem</th><th class="num">Nota</th></tr>`;
+      for (const v of vals) {
+        h += `<tr><td>${esc(v.item.nombre)}${v.item.tipo === "conducta"
+          ? ' <small style="color:var(--suave)">(de los episodios)</small>' : ""}</td>
+          <td class="num"><strong>${v.valor}</strong></td></tr>`;
+      }
+      h += `<tr><td><strong>Promedio</strong></td><td class="num"><strong>${
+        nc.promedio === null ? "—" : nc.promedio.toFixed(2)}</strong></td></tr>
+      </table></div>`;
+    }
+
+    /* nota del cuatrimestre */
+    h += `<div class="recuadro"><h3>Nota del ${cuat}º cuatrimestre</h3>
+      <div class="final">
+        <input type="number" id="notaFinal" min="${D.config.escalaMin}" max="${D.config.escalaMax}"
+          step="1" value="${nc.valor === null ? "" : nc.valor}">
+        <div>
+          <div class="calculado">Promedio calculado: <strong>${
+            nc.calculado === null ? "—" : nc.calculado}</strong>${
+            nc.promedio === null ? "" : ` (${nc.promedio.toFixed(2)})`}</div>
+          ${nc.aMano ? '<div style="margin-top:6px"><span class="marca-mano">la pusiste vos</span></div>' : ""}
+        </div>
+        ${nc.aMano ? '<button class="btn sec no-print" id="btnVolverCalculado">Volver al calculado</button>' : ""}
+      </div>
+      <p class="nota-pie">El promedio es referencia. Si escribís otra nota, manda la tuya.</p>
+    </div>`;
+  }
+
+  /* conducta */
+  const eps = episodiosDe(al.id, cuat);
+  h += `<div class="sep"></div><h3>Conducta: ${conductaDe(al.id, cuat)}</h3>`;
+  if (!eps.length) {
+    h += `<p class="nota-pie">Sin episodios registrados: mantiene el ${D.config.conductaInicial} inicial.</p>`;
+  } else {
+    for (const e of eps) {
+      h += `<div class="episodio">
+        <span class="cuando">${e.fecha ? fechaLarga(e.fecha) : "—"}</span>
+        <span class="delta ${e.delta < 0 ? "baja" : "sube"}">${e.delta > 0 ? "+" : ""}${e.delta}</span>
+        <span class="porque">${esc(e.motivo || "")}</span></div>`;
+    }
+  }
+  h += `</div>`;
+  cont.innerHTML = h;
+
+  const inp = $("#notaFinal");
+  if (inp) {
+    inp.addEventListener("change", () => {
+      const v = inp.value.trim();
+      D.manual = D.manual.filter((m) => !(m.alumno === al.id && +m.cuatrimestre === cuat));
+      if (v !== "") {
+        const n = Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, Math.round(Number(v))));
+        if (!isNaN(n) && n !== nc.calculado) D.manual.push({ alumno: al.id, cuatrimestre: cuat, valor: n });
+      }
+      marcarEdicion("q|" + al.curso + "|" + cuat);
+      guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
+    });
+  }
+  const vc = $("#btnVolverCalculado");
+  if (vc) vc.addEventListener("click", () => {
+    D.manual = D.manual.filter((m) => !(m.alumno === al.id && +m.cuatrimestre === cuat));
+    marcarEdicion("q|" + al.curso + "|" + cuat);
+    guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
+  });
+}
+
+/** Asistencia del alumno, si los bloques de la otra app ya se bajaron. */
+function asistenciaDe(alumnoId) {
+  const fechas = Object.keys(D.asistencia || {});
+  if (!fechas.length) return null;
+  let p = 0, t = 0, a = 0, j = 0;
+  for (const f of fechas) {
+    const e = D.asistencia[f][alumnoId];
+    if (e === undefined) continue;
+    if (e === 0) p++; else if (e === 1) t++; else if (e === 2) a++; else j++;
+  }
+  const medidas = p + t + a + j;
+  if (!medidas) return null;
+  return { medidas, asistidas: p + t, ausentes: a, tardes: t, justificados: j,
+           pct: (100 * (p + t)) / medidas };
+}
+
+$("#alCurso").addEventListener("change", () => { llenarAlumnos(); pintarAlumno(); });
+$("#alAlumno").addEventListener("change", pintarAlumno);
+$("#alCuat").addEventListener("change", pintarAlumno);
+$("#btnImprimirAlumno").addEventListener("click", () => { imprimirSinNotas = false; pintarAlumno(); setTimeout(() => window.print(), 60); });
+$("#btnSinNotas").addEventListener("click", () => {
+  imprimirSinNotas = true; pintarAlumno();
+  setTimeout(() => { window.print(); imprimirSinNotas = false; pintarAlumno(); }, 60);
+});
+
+/* ================= INFORME CURSO ================= */
+function pintarCurso() {
+  const c = IDX.cursoPorId[$("#cuCurso").value];
+  const cuat = +$("#cuCuat").value;
+  const cont = $("#fichaCurso");
+  if (!c) { cont.innerHTML = ""; return; }
+  const alumnos = IDX.porCurso[c.id] || [];
+  const items = (IDX.itemsPorCurso[c.id] || []).filter((i) => +i.cuatrimestre === cuat);
+
+  const filas = alumnos.map((a) => ({ a, nc: notaCuatrimestre(a.id, cuat),
+                                      cond: conductaDe(a.id, cuat) }));
+  const conNota = filas.filter((f) => f.nc.valor !== null);
+  const prom = conNota.length ? conNota.reduce((t, f) => t + f.nc.valor, 0) / conNota.length : null;
+  const bajos = conNota.filter((f) => f.nc.valor < 7);
+
+  let h = `<div class="panel">
+    <h1>${esc(c.etiqueta)}</h1>
+    <p class="nota-pie" style="margin-top:-4px">${cuat}º cuatrimestre · generado el ${fechaLarga(hoyISO())}</p>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${alumnos.length}</div><div class="e">Alumnos</div></div>
+      <div class="kpi"><div class="v">${items.length}</div><div class="e">Ítems</div></div>
+      <div class="kpi"><div class="v">${prom === null ? "—" : prom.toFixed(2)}</div><div class="e">Promedio</div></div>
+      <div class="kpi a"><div class="v">${bajos.length}</div><div class="e">Debajo de 7</div></div>
+    </div></div>`;
+
+  h += `<div class="panel"><h2>Notas del curso</h2><div class="tabla-wrap"><table>
+    <tr><th>Alumno</th>` +
+    items.map((i) => `<th class="num">${esc(i.nombre.split(":")[0])}</th>`).join("") +
+    `<th class="num">Prom.</th><th class="num">Nota</th></tr>`;
+  for (const f of filas.sort((x, y) => (x.nc.valor ?? 99) - (y.nc.valor ?? 99))) {
+    h += `<tr class="${f.nc.valor !== null && f.nc.valor < 7 ? "riesgo" : ""}">
+      <td class="col-nombre"><span class="nombre-alumno">${esc(f.a.nombre)}</span></td>`;
+    for (const i of items) {
+      const v = i.tipo === "conducta" ? conductaDe(f.a.id, cuat) : IDX.nota[f.a.id + "|" + i.id];
+      h += `<td class="num">${v === undefined ? "·" : v}</td>`;
+    }
+    h += `<td class="num">${f.nc.promedio === null ? "—" : f.nc.promedio.toFixed(1)}</td>
+      <td class="num"><strong>${f.nc.valor === null ? "—" : f.nc.valor}</strong>${
+        f.nc.aMano ? ' <small style="color:var(--t)">(a mano)</small>' : ""}</td></tr>`;
+  }
+  h += `</table></div>
+    <p class="nota-pie">El punto (·) es que todavía no entregó o no le cargaste la nota.</p></div>`;
+
+  /* quién debe trabajos */
+  const deudores = [];
+  for (const a of alumnos) {
+    const faltan = items.filter((i) => i.tipo !== "conducta" && IDX.nota[a.id + "|" + i.id] === undefined);
+    if (faltan.length) deudores.push({ a, faltan });
+  }
+  h += `<div class="panel"><h2>Trabajos sin entregar</h2>`;
+  if (!deudores.length) h += `<p class="aviso ok">Todos entregaron todo.</p>`;
+  else {
+    h += `<div class="tabla-wrap"><table><tr><th>Alumno</th><th class="num">Debe</th><th>Cuáles</th></tr>`;
+    for (const d of deudores.sort((x, y) => y.faltan.length - x.faltan.length)) {
+      h += `<tr><td class="col-nombre"><span class="nombre-alumno">${esc(d.a.nombre)}</span></td>
+        <td class="num"><strong>${d.faltan.length}</strong></td>
+        <td>${d.faltan.map((i) => esc(i.nombre.split(":")[0])).join(", ")}</td></tr>`;
+    }
+    h += `</table></div>`;
+  }
+  h += `</div>`;
+  cont.innerHTML = h;
+}
+
+$("#cuCurso").addEventListener("change", pintarCurso);
+$("#cuCuat").addEventListener("change", pintarCurso);
+$("#btnImprimirCurso").addEventListener("click", () => window.print());
+
+/* ================= DATOS ================= */
+function pintarDatos() {
+  llenarCursos($("#gItemCurso"), $("#gItemCurso").value);
+  pintarItems();
+  pintarEstadoNube();
+  const conNotas = new Set(D.notas.map((n) => n.alumno)).size;
+  $("#estadoDatos").innerHTML = `<div class="tabla-wrap"><table>
+    <tr><td>Versión de la app</td><td class="num"><strong>${VERSION}</strong></td></tr>
+    <tr><td>Cursos</td><td class="num">${D.cursos.length}</td></tr>
+    <tr><td>Alumnos</td><td class="num">${D.alumnos.length}</td></tr>
+    <tr><td>Trabajos y evaluaciones</td><td class="num">${D.items.length}</td></tr>
+    <tr><td>Notas cargadas</td><td class="num">${D.notas.length}</td></tr>
+    <tr><td>Alumnos con alguna nota</td><td class="num">${conNotas}</td></tr>
+    <tr><td>Episodios de conducta</td><td class="num">${D.conducta.length}</td></tr>
+    <tr><td>Notas puestas a mano</td><td class="num">${D.manual.length}</td></tr>
+    <tr><td>Jornadas de asistencia leídas</td><td class="num">${Object.keys(D.asistencia || {}).length}</td></tr>
+  </table></div>`;
+}
+
+function pintarItems() {
+  const cid = $("#gItemCurso").value;
+  const items = IDX.itemsPorCurso[cid] || [];
+  const cont = $("#listaItems");
+  if (!items.length) { cont.innerHTML = `<p class="aviso info">Este curso no tiene ítems.</p>`; return; }
+  let h = "";
+  for (const i of items) {
+    const n = D.notas.filter((x) => x.item === i.id).length;
+    h += `<div class="gfila" data-i="${i.id}">
+      <div class="gnom">${esc(i.nombre)}
+        <small>C${i.cuatrimestre} · ${i.tipo}${i.tipo === "conducta" ? " (se arma con episodios)"
+          : " · " + n + (n === 1 ? " nota" : " notas")}</small></div>
+      <div class="gacc">
+        <button data-acc="renombrar">Renombrar</button>
+        ${i.tipo === "conducta" ? "" : '<button data-acc="borrar" class="mal">Eliminar</button>'}
+      </div></div>`;
+  }
+  cont.innerHTML = h;
+}
+
+$("#gItemCurso").addEventListener("change", pintarItems);
+$("#listaItems").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-acc]");
+  if (!b) return;
+  const id = b.closest(".gfila").dataset.i;
+  const it = IDX.itemPorId[id];
+  if (b.dataset.acc === "renombrar") {
+    const nuevo = prompt("Nombre del trabajo:", it.nombre);
+    if (!nuevo || !nuevo.trim()) return;
+    it.nombre = nuevo.trim().replace(/\s+/g, " ");
+    marcarEdicion("items");
+  } else {
+    const n = D.notas.filter((x) => x.item === id).length;
+    if (!confirm(`¿Eliminar "${it.nombre}"?` + (n ? ` Se pierden ${n} notas.` : ""))) return;
+    D.items = D.items.filter((x) => x.id !== id);
+    D.notas = D.notas.filter((x) => x.item !== id);
+    D.bajas[id] = new Date().toISOString();
+    marcarEdicion("items");
+    marcarEdicion("n|" + id);
+  }
+  guardar(); reindexar(); pintarItems(); llenarItems(); sincronizarDespues();
+});
+
+/* ---------------- exportar y copia ---------------- */
+function bajar(nombre, texto, tipo) {
+  const partes = tipo ? [texto] : ["﻿", texto];
+  const blob = new Blob(partes, { type: (tipo || "text/csv") + ";charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = crear("a", { href: url, download: nombre });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function csv(filas) {
+  return filas.map((f) => f.map((v) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(";")).join("\r\n");
+}
+
+$("#btnCsv").addEventListener("click", () => {
+  const filas = [["Curso", "Alumno", "Cuatrimestre", "Item", "Tipo", "Nota"]];
+  for (const c of D.cursos) {
+    for (const a of (IDX.porCurso[c.id] || [])) {
+      for (const i of (IDX.itemsPorCurso[c.id] || [])) {
+        const v = i.tipo === "conducta" ? conductaDe(a.id, i.cuatrimestre) : IDX.nota[a.id + "|" + i.id];
+        if (v === undefined) continue;
+        filas.push([c.etiqueta, a.nombre, i.cuatrimestre, i.nombre, i.tipo, v]);
+      }
+      for (const cu of [1, 2]) {
+        const nc = notaCuatrimestre(a.id, cu);
+        if (nc.valor !== null) {
+          filas.push([c.etiqueta, a.nombre, cu, "NOTA DEL CUATRIMESTRE",
+                      nc.aMano ? "cargada a mano" : "calculada", nc.valor]);
+        }
+      }
+    }
+  }
+  bajar(`notas_${hoyISO().replace(/-/g, "")}.csv`, csv(filas));
+});
+
+$("#btnBackup").addEventListener("click", () => {
+  bajar(`copia_notas_${hoyISO().replace(/-/g, "")}.json`,
+    JSON.stringify({ app: "notas2026", version: 1, fecha: new Date().toISOString(), datos: D }),
+    "application/json");
+});
+$("#btnRestaurar").addEventListener("click", () => $("#fileRestaurar").click());
+$("#fileRestaurar").addEventListener("change", (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  const lec = new FileReader();
+  lec.onload = () => {
+    try {
+      const j = JSON.parse(lec.result);
+      const d = j.datos || j;
+      if (!d.alumnos || !d.items) throw new Error("formato");
+      if (!confirm("Esto reemplaza todo lo que hay en este dispositivo. ¿Seguir?")) return;
+      D = d;
+      for (const k of ["asistencia", "editado", "sync", "bajas"]) D[k] = D[k] || {};
+      for (const k of ["notas", "conducta", "manual"]) D[k] = D[k] || [];
+      guardar(); reindexar(); refrescarSelects(); pintarDatos();
+      alerta("#avisoDatos", "Copia restaurada.", "ok");
+    } catch (e) { alerta("#avisoDatos", "Ese archivo no es una copia válida.", "mal"); }
+    ev.target.value = "";
+  };
+  lec.readAsText(f);
+});
+
+/* ==================================================================
+   SINCRONIZACION
+
+   Mismo servidor y misma llave que la app de asistencia. Cada bloque
+   se cifra ACA ADENTRO y su id es un hash: el servidor guarda cajas
+   cerradas.
+
+   Lo que esta app POSEE y sube:
+     items          la lista de trabajos de todos los cursos
+     n|<item>       las notas de un trabajo
+     c|<curso>|<c>  los episodios de conducta de un curso y cuatrimestre
+     q|<curso>|<c>  las notas de cuatrimestre puestas a mano
+
+   Lo que esta app LEE pero no toca: el padron y las jornadas, que son
+   de la app de asistencia. Por eso el mismo alumno es uno solo en las
+   dos, y por eso la ficha puede mostrar asistencia y notas juntas.
+
+   Se BAJA ANTES DE SUBIR, siempre. Al reves, un dispositivo pisaria en
+   el servidor lo que dejo el otro y despues leeria lo que el mismo
+   acaba de escribir.
+   ================================================================== */
+
+let claveCifrado = null;
+let sincronizando = false;
+
+function marcarEdicion(clave) {
+  D.editado[clave] = new Date().toISOString();
+}
+
+function configNube() {
+  const s = D.sync || {};
+  const secreto = s.secreto || (SYNC && SYNC.secreto);
+  const clave = s.clave || (SYNC && SYNC.clave);
+  if (!SYNC || !SYNC.url || !SYNC.anon || !secreto || !clave) return null;
+  return { url: SYNC.url, anon: SYNC.anon, secreto, clave };
+}
+
+async function obtenerClave() {
+  if (claveCifrado) return claveCifrado;
+  const cfg = configNube();
+  if (!cfg) throw new Error("sin configuración de sincronización");
+  claveCifrado = await crypto.subtle.importKey(
+    "raw", deB64(cfg.clave), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  return claveCifrado;
+}
+
+async function cifrarBloque(obj) {
+  const clave = await obtenerClave();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, clave,
+    new TextEncoder().encode(JSON.stringify(obj)));
+  return aB64(iv) + "." + aB64(ct);
+}
+
+async function descifrarBloque(txt) {
+  const clave = await obtenerClave();
+  const [iv, ct] = txt.split(".");
+  const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(iv) }, clave, deB64(ct));
+  return JSON.parse(new TextDecoder().decode(plano));
+}
+
+/** El id lleva prefijo "notas:" para no chocar con los bloques de asistencia. */
+async function idBloque(clave) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("notas:" + clave));
+  return aB64(h).replace(/[^A-Za-z0-9]/g, "").slice(0, 32);
+}
+
+/* ---------------- qué contiene cada bloque ---------------- */
+
+function contenidoDe(clave) {
+  if (clave === "items") {
+    return { tipo: "ni", items: D.items, bajas: D.bajas || {} };
+  }
+  const p = clave.split("|");
+  if (p[0] === "n") {
+    const valores = {};
+    for (const n of D.notas) if (n.item === p[1]) valores[n.alumno] = n.valor;
+    return { tipo: "nn", item: p[1], valores };
+  }
+  if (p[0] === "c") {
+    const eps = D.conducta.filter((e) => {
+      const al = IDX.alumnoPorId[e.alumno];
+      return al && al.curso === p[1] && +e.cuatrimestre === +p[2];
+    });
+    return { tipo: "nc", curso: p[1], cuatrimestre: +p[2], episodios: eps };
+  }
+  if (p[0] === "q") {
+    const m = {};
+    for (const x of D.manual) {
+      const al = IDX.alumnoPorId[x.alumno];
+      if (al && al.curso === p[1] && +x.cuatrimestre === +p[2]) m[x.alumno] = x.valor;
+    }
+    return { tipo: "nq", curso: p[1], cuatrimestre: +p[2], manual: m };
+  }
+  return null;
+}
+
+/* ---------------- aplicar lo que baja ---------------- */
+
+function aplicarBloque(c, editado) {
+  /* --- del lado de asistencia: se lee, no se toca --- */
+  if (c.tipo === "p") {
+    // El padrón es de la app de asistencia: acá se adopta tal cual, así el
+    // mismo alumno tiene el mismo id en las dos.
+    D.cursos = c.cursos.map((x) => ({ id: x.id, etiqueta: x.etiqueta }));
+    D.alumnos = c.alumnos.map((x) => ({ id: x.id, nombre: x.nombre, curso: x.curso }));
+    return true;
+  }
+  if (c.tipo === "j") {
+    (D.asistencia[c.fecha] || (D.asistencia[c.fecha] = {}));
+    for (const aid in c.registros) D.asistencia[c.fecha][aid] = c.registros[aid];
+    if (!Object.keys(c.registros).length) delete D.asistencia[c.fecha];
+    return true;
+  }
+
+  /* --- propios --- */
+  if (c.tipo === "ni") {
+    for (const id in (c.bajas || {})) {
+      if (!D.bajas[id] || c.bajas[id] > D.bajas[id]) D.bajas[id] = c.bajas[id];
+    }
+    const mios = new Set(D.items.map((i) => i.id));
+    for (const it of (c.items || [])) {
+      if (D.bajas[it.id]) continue;
+      if (!mios.has(it.id)) D.items.push(it);
+    }
+    D.items = D.items.filter((i) => !D.bajas[i.id]);
+    return true;
+  }
+  if (c.tipo === "nn") {
+    D.notas = D.notas.filter((n) => n.item !== c.item);
+    for (const aid in (c.valores || {})) {
+      D.notas.push({ alumno: aid, item: c.item, valor: c.valores[aid] });
+    }
+    return true;
+  }
+  if (c.tipo === "nc") {
+    D.conducta = D.conducta.filter((e) => {
+      const al = IDX.alumnoPorId[e.alumno];
+      return !(al && al.curso === c.curso && +e.cuatrimestre === +c.cuatrimestre);
+    });
+    for (const e of (c.episodios || [])) D.conducta.push(e);
+    return true;
+  }
+  if (c.tipo === "nq") {
+    D.manual = D.manual.filter((x) => {
+      const al = IDX.alumnoPorId[x.alumno];
+      return !(al && al.curso === c.curso && +x.cuatrimestre === +c.cuatrimestre);
+    });
+    for (const aid in (c.manual || {})) {
+      D.manual.push({ alumno: aid, cuatrimestre: c.cuatrimestre, valor: c.manual[aid] });
+    }
+    return true;
+  }
+  return false;
+}
+
+/** La clave local que le corresponde a un bloque que bajó, para poder
+ *  compararlo con lo que tenemos y decidir quién es más nuevo. */
+function claveDe(c) {
+  if (c.tipo === "ni") return "items";
+  if (c.tipo === "nn") return "n|" + c.item;
+  if (c.tipo === "nc") return "c|" + c.curso + "|" + c.cuatrimestre;
+  if (c.tipo === "nq") return "q|" + c.curso + "|" + c.cuatrimestre;
+  return null;   // padrón y jornadas: son de la otra app, siempre se aplican
+}
+
+async function llamarNube(funcion, cuerpo) {
+  const cfg = configNube();
+  const resp = await fetch(`${cfg.url}/rest/v1/rpc/${funcion}`, {
+    method: "POST",
+    headers: { "apikey": cfg.anon, "Authorization": "Bearer " + cfg.anon,
+               "Content-Type": "application/json" },
+    body: JSON.stringify(Object.assign({ p_secreto: cfg.secreto }, cuerpo)),
+  });
+  if (!resp.ok) throw new Error(`${resp.status}: ${(await resp.text()).slice(0, 160)}`);
+  return resp.json();
+}
+
+async function sincronizar(subirTodo) {
+  const cfg = configNube();
+  if (!cfg) { avisoNube("Este dispositivo todavía no está configurado.", "alerta"); return; }
+  if (sincronizando) return;
+  if (!navigator.onLine) { avisoNube("Sin conexión. Se sincroniza sola cuando vuelva la señal.", "info"); return; }
+  sincronizando = true;
+  pintarEstadoNube("Sincronizando…");
+  const r = { subidos: 0, aplicados: 0, ignorados: 0 };
+  try {
+    D.sync = D.sync || {};
+
+    /* ---- 1. bajar y fusionar (siempre antes de subir) ---- */
+    const filas = await llamarNube("asis_bajar", { p_desde: D.sync.cursor || null });
+    const desc = [];
+    for (const f of filas) {
+      try {
+        desc.push({ c: await descifrarBloque(f.contenido), editado: f.editado,
+                    actualizado: f.actualizado });
+      } catch (e) { r.ignorados++; }
+    }
+    // el padrón primero: las notas necesitan que existan sus alumnos
+    desc.sort((a, b) => (a.c.tipo === "p" ? -1 : 1) - (b.c.tipo === "p" ? -1 : 1));
+
+    for (const f of desc) {
+      const k = claveDe(f.c);
+      if (k && (D.editado[k] || "") >= f.editado) continue;   // lo nuestro es más nuevo
+      if (aplicarBloque(f.c, f.editado)) {
+        if (k) {
+          D.editado[k] = f.editado;
+          (D.sync.enviados || (D.sync.enviados = {}))[k] = f.editado;
+        }
+        r.aplicados++;
+      }
+      if (!D.sync.cursor || f.actualizado > D.sync.cursor) D.sync.cursor = f.actualizado;
+    }
+    reindexar();
+
+    /* ---- 2. subir lo que quedó pendiente ---- */
+    const enviados = subirTodo ? {} : (D.sync.enviados || {});
+    const pendientes = [];
+    for (const k in D.editado) {
+      if (enviados[k] === D.editado[k]) continue;
+      const c = contenidoDe(k);
+      if (c) pendientes.push({ clave: k, editado: D.editado[k], contenido: c });
+    }
+    if (pendientes.length) {
+      const paquete = [];
+      for (const p of pendientes) {
+        paquete.push({ id: await idBloque(p.clave), editado: p.editado,
+                       contenido: await cifrarBloque(p.contenido) });
+      }
+      for (let i = 0; i < paquete.length; i += 60) {
+        await llamarNube("asis_subir", { p_bloques: paquete.slice(i, i + 60) });
+      }
+      for (const p of pendientes) enviados[p.clave] = p.editado;
+      r.subidos = pendientes.length;
+      D.sync.enviados = enviados;
+    }
+
+    D.sync.ultima = new Date().toISOString();
+    guardar(); reindexar();
+    // los desplegables tienen que reflejar lo que acaba de llegar: si no, un
+    // curso o un alumno nuevo no se puede elegir hasta recargar la página
+    refrescarSelects();
+    const vista = VISTAS.find((v) => !$("#v-" + v).classList.contains("oculto"));
+    if (vista) mostrar(vista);
+
+    const partes = [];
+    if (r.subidos) partes.push(`${r.subidos} subidas`);
+    if (r.aplicados) partes.push(`${r.aplicados} bajadas`);
+    avisoNube(partes.length ? "Sincronizado: " + partes.join(" y ") + "." : "Ya estaba todo al día.", "ok");
+    marcarGuardado("Sincronizado");
+  } catch (e) {
+    avisoNube("No se pudo sincronizar: " + e.message +
+              " Tus datos están a salvo en este dispositivo.", "mal");
+  } finally {
+    sincronizando = false;
+    pintarEstadoNube();
+  }
+}
+
+function avisoNube(txt, tipo) { alerta("#avisoNube", txt, tipo); }
+
+function pintarEstadoNube(trabajando) {
+  const el = $("#estadoNube");
+  if (!el) return;
+  if (!configNube()) {
+    el.innerHTML = `<p class="aviso alerta">Este dispositivo todavía no tiene la llave.</p>`;
+    return;
+  }
+  const s = D.sync || {};
+  const pend = Object.keys(D.editado || {}).filter((k) => (s.enviados || {})[k] !== D.editado[k]).length;
+  el.innerHTML = `<div class="tabla-wrap"><table>
+    <tr><td>Estado</td><td class="num">${trabajando ? "Sincronizando…"
+      : navigator.onLine ? "Conectado" : "Sin conexión"}</td></tr>
+    <tr><td>Última sincronización</td><td class="num">${
+      s.ultima ? fechaLarga(s.ultima.slice(0, 10)) + " " + s.ultima.slice(11, 16) : "nunca"}</td></tr>
+    <tr><td>Sin subir</td><td class="num">${pend}</td></tr>
+  </table></div>`;
+}
+
+let sincDemorada = null;
+function sincronizarDespues() {
+  if (!configNube()) return;
+  clearTimeout(sincDemorada);
+  sincDemorada = setTimeout(() => sincronizar(false), 4000);
+}
+
+$("#btnSincronizar").addEventListener("click", () => sincronizar(false));
+$("#btnSubirTodo").addEventListener("click", () => sincronizar(true));
+window.addEventListener("online", () => sincronizarDespues());
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") sincronizarDespues();
+});
+window.addEventListener("focus", () => sincronizarDespues());
+
+/* ---------------- desbloqueo y enlace ---------------- */
+
+function credencialesDelEnlace() {
+  const m = (location.hash || "").match(/[#&]c=([A-Za-z0-9_\-]+)/);
+  if (!m) return null;
+  try {
+    const o = JSON.parse(decodeURIComponent(escape(atob(
+      m[1].replace(/-/g, "+").replace(/_/g, "/")))));
+    return o.s && o.k ? { secreto: o.s, clave: o.k } : null;
+  } catch (e) { return null; }
+}
+
+function limpiarEnlace() {
+  const borrar = () => {
+    if (location.hash) {
+      try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    }
+  };
+  borrar();
+  if (document.readyState !== "complete") window.addEventListener("load", borrar);
+  setTimeout(borrar, 400);
+}
+
+function mostrarCandado(ver) {
+  document.getElementById("candado").classList.toggle("oculto", !ver);
+}
+
+async function descifrar(clave) {
+  const material = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
+  const llave = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: deB64(CIFRADO.sal), iterations: CIFRADO.vueltas, hash: "SHA-256" },
+    material, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const plano = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: deB64(CIFRADO.iv) }, llave, deB64(CIFRADO.datos));
+  return JSON.parse(new TextDecoder().decode(plano));
+}
+
+async function abrirConClave() {
+  const inp = $("#clave"), btn = $("#btnAbrir");
+  if (!inp.value) { alerta("#avisoClave", "Escribí la contraseña.", "mal"); return; }
+  btn.disabled = true; btn.textContent = "Abriendo…";
+  $("#avisoClave").innerHTML = "";
+  await new Promise((r) => setTimeout(r, 30));
+  try {
+    const paquete = await descifrar(inp.value);
+    D = desdeSemilla(paquete.semilla || paquete);
+    if (paquete.sync) D.sync = Object.assign({}, D.sync, paquete.sync);
+    guardar(); reindexar(); refrescarSelects(); pintarCargar();
+    inp.value = "";
+    mostrarCandado(false);
+    marcarGuardado("Datos cargados");
+    sincronizarDespues();
+  } catch (e) {
+    alerta("#avisoClave", "Esa contraseña no es. Fijate mayúsculas y espacios.", "mal");
+    inp.select();
+  } finally { btn.disabled = false; btn.textContent = "Abrir"; }
+}
+
+
+/* ---------------- arranque ---------------- */
+function refrescarSelects() {
+  llenarCursos($("#selCurso"), $("#selCurso").value);
+  llenarCursos($("#condCurso"), $("#condCurso").value);
+  llenarCursos($("#alCurso"), $("#alCurso").value);
+  llenarCursos($("#cuCurso"), $("#cuCurso").value);
+  llenarCursos($("#gItemCurso"), $("#gItemCurso").value);
+  llenarItems();
+  llenarAlumnos();
+}
+
+function iniciar() {
+  const sello = document.getElementById("sello");
+  if (sello) sello.textContent = "v" + VERSION;
+  if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  const habiaGuardado = !!localStorage.getItem(CLAVE_LS);
+  D = cargar();
+  reindexar();
+  refrescarSelects();
+  pintarCargar();
+
+  const delEnlace = credencialesDelEnlace();
+  if (delEnlace) {
+    D.sync = Object.assign({}, D.sync, delEnlace);
+    guardar(); limpiarEnlace(); claveCifrado = null;
+    sincronizar(false).then(() => { reindexar(); refrescarSelects(); pintarCargar(); });
+  } else if (configNube() && D.alumnos.length) {
+    sincronizarDespues();
+  } else if (CIFRADO && !habiaGuardado && !D.alumnos.length) {
+    mostrarCandado(true);
+    setTimeout(() => $("#clave").focus(), 120);
+  }
+  $("#btnAbrir").addEventListener("click", abrirConClave);
+  $("#clave").addEventListener("keydown", (e) => { if (e.key === "Enter") abrirConClave(); });
+  $("#btnSaltearClave").addEventListener("click", () => mostrarCandado(false));
+}
+iniciar();
+</script>
+</body>
+</html>
