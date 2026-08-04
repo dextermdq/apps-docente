@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es-AR">
 <head>
 <meta charset="utf-8">
@@ -299,6 +299,14 @@ td.col-nombre{min-width:150px}
   .val-obs{flex:1 1 200px;order:2}
   .val-btns{order:3}
 }
+/* el recuadro donde se pega la planilla de Excel: monoespaciado para que las
+   columnas se vean alineadas, y sin ajuste de línea para no confundir filas */
+#txtImportar{width:100%;padding:11px 12px;border:1.5px solid var(--borde);
+  border-radius:10px;background:#fff;font:inherit;color:inherit;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.85rem;
+  white-space:pre;overflow-x:auto;margin-bottom:10px}
+#txtImportar:focus{outline:2px solid var(--acento);outline-offset:1px;border-color:var(--acento)}
+
 /* la tabla de valoración es para el papel; en pantalla están los botones */
 .solo-print{display:none}
 @media print{ .solo-print{display:block} }
@@ -332,6 +340,7 @@ td.col-nombre{min-width:150px}
     <button data-v="conducta">Conducta</button>
     <button data-v="alumno">Informe alumno</button>
     <button data-v="curso">Informe curso</button>
+    <button data-v="archivo">Archivo</button>
     <button data-v="datos">Datos</button>
   </nav>
 </header>
@@ -359,10 +368,27 @@ td.col-nombre{min-width:150px}
     <div id="listaNotas"></div>
     <div class="acciones no-print">
       <button class="btn sec" id="btnNuevoItem">Agregar trabajo</button>
+      <button class="btn sec" id="btnAbrirImportar">Cargar una planilla</button>
     </div>
   </div>
 
-  <div class="guardar-fijo no-print">
+  <div class="panel no-print oculto" id="panelImportar">
+    <h2>Cargar una planilla entera</h2>
+    <p class="nota-pie">Copiá el rango en Excel y pegalo acá con Ctrl+V, o elegí un
+      archivo CSV. La primera fila tienen que ser los títulos de las columnas y la
+      primera columna, los alumnos. Antes de guardar nada te muestro qué entendí.</p>
+    <textarea id="txtImportar" rows="6" placeholder="Alumno	TP1	TP2	CARPETA 1&#10;ALVARADO UMA	7	8	7&#10;ALVAREZ LUCIA	8	9	8"></textarea>
+    <div class="acciones">
+      <button class="btn sec" id="btnArchivoImportar">Elegir un archivo CSV</button>
+      <input type="file" id="fileImportar" accept=".csv,.txt,.tsv,text/csv,text/plain" class="oculto">
+      <button class="btn" id="btnPrevisualizar">Ver qué se va a cargar</button>
+      <button class="btn sec" id="btnCerrarImportar">Cerrar</button>
+    </div>
+    <div id="previaImportar"></div>
+    <div id="avisoImportar"></div>
+  </div>
+
+  <div class="guardar-fijo no-print" id="barraGuardar">
     <button class="btn" id="btnGuardarNotas">Guardar notas</button>
   </div>
 </section>
@@ -442,6 +468,44 @@ td.col-nombre{min-width:150px}
   <div id="fichaCurso"></div>
 </section>
 
+<!-- ============ ARCHIVO ============ -->
+<section id="v-archivo" class="oculto">
+  <div class="panel no-print">
+    <h2>Cerrar un curso</h2>
+    <p class="nota-pie">Cuando un curso ya terminó —con su final, su diciembre y su
+      febrero— archivalo. Sale de todas las pantallas y libera el lugar para el curso
+      del año que viene, sin perder nada.</p>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="arCurso">Curso a archivar</label>
+        <select id="arCurso"></select>
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn" id="btnArchivar">Archivar este curso</button>
+    </div>
+    <div id="avisoArchivo"></div>
+  </div>
+
+  <div class="panel no-print" id="panelHuerfanos"></div>
+
+  <div class="panel no-print">
+    <h2>Cursos archivados</h2>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="arVer">Ver un ciclo cerrado</label>
+        <select id="arVer"></select>
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnImprimirArchivo">Imprimir / Guardar PDF</button>
+      <button class="btn sec" id="btnCsvArchivo">Exportar a Excel (CSV)</button>
+      <button class="btn sec" id="btnDesarchivar">Volver a abrirlo</button>
+    </div>
+  </div>
+  <div id="fichaArchivo"></div>
+</section>
+
 <!-- ============ DATOS ============ -->
 <section id="v-datos" class="oculto">
   <div class="panel" id="panelNube">
@@ -493,9 +557,10 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "03/08 23:03";
+const VERSION = "04/08 19:59";
 
 const CLAVE_LS = "notas2026";
+const CICLO = 2026;          // el año que se está cursando
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
 
 /* ---------------- utilidades ---------------- */
@@ -532,8 +597,11 @@ function desdeSemilla(S) {
     valoraciones: JSON.parse(JSON.stringify(S.valoraciones || [])),
     asistencia: {},          // se llena desde la nube, solo para la ficha combinada
     editado: {}, sync: {}, bajas: {},
+    archivado: JSON.parse(JSON.stringify(S.archivado || {})),  // qué cursos se cerraron
+    archivo: JSON.parse(JSON.stringify(S.archivo || {})),      // la foto de cada uno
+    nombres: {},             // libreta de nombres, por si el padrón deja huérfanos
     config: Object.assign({ escalaMin: 1, escalaMax: 10, conductaInicial: 10,
-                            conductaEnPromedio: 1 }, S.config || {}),
+                            conductaEnPromedio: 1, ciclo: CICLO }, S.config || {}),
   };
 }
 
@@ -543,14 +611,52 @@ function cargar() {
     if (crudo) {
       const d = JSON.parse(crudo);
       if (d && d.alumnos && d.items) {
-        for (const k of ["asistencia", "editado", "sync", "bajas"]) d[k] = d[k] || {};
+        for (const k of ["asistencia", "editado", "sync", "bajas",
+                         "archivado", "archivo", "nombres"]) d[k] = d[k] || {};
         for (const k of ["notas", "conducta", "manual", "finales", "valoraciones"]) d[k] = d[k] || [];
+        if (!d.config) d.config = {};
+        if (!d.config.ciclo) d.config.ciclo = CICLO;
         barrerItemsViejos(d);
         return d;
       }
     }
   } catch (e) { /* guardado corrupto: se arranca de la semilla */ }
   return desdeSemilla();
+}
+
+/* ---------------- ciclos cerrados ----------------
+   Archivar un curso lo saca de todo lo vivo sin borrar nada: sus notas, su
+   conducta y sus cierres pasan a una foto guardada aparte, con los NOMBRES
+   adentro. Eso ultimo es lo importante: el padron viene de la app de
+   asistencia y se reemplaza entero, asi que el dia que alla se den de baja
+   los cursos del ano pasado, aca solo quedarian ids sueltos.
+
+   Lo unico que se sigue pudiendo escribir en un ciclo cerrado son las tres
+   notas del cierre: final, diciembre y febrero. Las mesas de febrero caen
+   cuando el ano nuevo ya arranco, y esa nota tiene que poder entrar. */
+
+function cursoArchivado(cid) {
+  const a = (D && D.archivado || {})[cid];
+  return !!(a && a.activo !== false);
+}
+
+/** El curso al que pertenece un item, sacado de su id (I0001-03 -> C0001).
+ *  Sirve cuando el item ya no esta en la lista viva y no hay a quien preguntarle. */
+function cursoDeItemId(id) {
+  const m = /^I([^-]+)-/.exec(String(id || ""));
+  return m ? "C" + m[1] : "";
+}
+
+function cursosArchivados() {
+  return Object.keys(D.archivado || {}).filter(cursoArchivado);
+}
+
+/** Como se llama un curso archivado, aunque ya no este en el padron. */
+function etiquetaArchivada(cid) {
+  const f = (D.archivo || {})[cid];
+  if (f && f.curso && f.curso.etiqueta) return f.curso.etiqueta;
+  const c = (D.cursos || []).find((x) => x.id === cid);
+  return c ? c.etiqueta : cid;
 }
 
 /** Barrido de una sola vez.
@@ -598,19 +704,37 @@ function marcarGuardado(txt, mal) {
 let IDX = null;
 function reindexar() {
   const porCurso = {}, alumnoPorId = {}, cursoPorId = {}, itemsPorCurso = {}, itemPorId = {};
-  for (const c of D.cursos) { cursoPorId[c.id] = c; porCurso[c.id] = []; itemsPorCurso[c.id] = []; }
+  /* Los cursos archivados no entran al indice. Es el unico filtro que hace
+     falta: todas las vistas arrancan de aca, y el padron puede seguir
+     mandandolos sin que vuelvan a aparecer. */
+  for (const c of D.cursos) {
+    if (cursoArchivado(c.id)) continue;
+    cursoPorId[c.id] = c; porCurso[c.id] = []; itemsPorCurso[c.id] = [];
+  }
   for (const a of D.alumnos) {
+    if (cursoArchivado(a.curso)) continue;
     alumnoPorId[a.id] = a;
     if (porCurso[a.curso]) porCurso[a.curso].push(a);
   }
   for (const id in porCurso) porCurso[id].sort((x, y) => x.nombre.localeCompare(y.nombre, "es"));
   for (const i of D.items) {
+    if (cursoArchivado(i.curso || cursoDeItemId(i.id))) continue;
     itemPorId[i.id] = i;
     if (itemsPorCurso[i.curso]) itemsPorCurso[i.curso].push(i);
   }
   for (const id in itemsPorCurso) {
     itemsPorCurso[id].sort((a, b) => (a.cuatrimestre - b.cuatrimestre) || (a.orden - b.orden));
   }
+  /* La libreta de nombres se anota acá y no solo cuando baja el padrón: un
+     dispositivo que cargó de la semilla y todavía no sincronizó también tiene
+     que poder decir de quién era una nota si el alumno desaparece después. */
+  D.nombres = D.nombres || {};
+  for (const a of D.alumnos) {
+    const c = cursoPorId[a.curso];
+    D.nombres[a.id] = { nombre: a.nombre, curso: a.curso,
+                        etiqueta: c ? c.etiqueta : (D.nombres[a.id] || {}).etiqueta || "" };
+  }
+
   const nota = {};
   for (const n of D.notas) nota[n.alumno + "|" + n.item] = n.valor;
   const manual = {};
@@ -754,8 +878,116 @@ function guardarValoracion(alumnoId, informe, valor, obs) {
   if (al) marcarEdicion("v|" + al.curso + "|" + informe);
 }
 
+/* ---------------- archivar un curso ---------------- */
+
+/** Las claves de sincronización que le pertenecen a un curso. */
+function clavesDelCurso(cid, items) {
+  const k = ["f|" + cid];
+  for (const c of [1, 2]) k.push("q|" + cid + "|" + c, "c|" + cid + "|" + c, "v|" + cid + "|" + c);
+  for (const i of items) k.push("n|" + i.id);
+  return k;
+}
+
+/** Cierra el ciclo de un curso: se lleva TODO a una foto y lo saca de lo vivo.
+ *
+ *  La foto guarda dos cosas a propósito: el detalle crudo (cada nota, cada
+ *  episodio) para poder consultarlo, y el resultado ya calculado. Lo segundo
+ *  es lo que hace que un año cerrado no se mueva nunca más: si algún día
+ *  cambia la fórmula del promedio, 2026 sigue diciendo lo que decía. */
+function archivarCurso(cid) {
+  const curso = IDX.cursoPorId[cid];
+  if (!curso || cursoArchivado(cid)) return null;
+  const alumnos = IDX.porCurso[cid] || [];
+  const items = IDX.itemsPorCurso[cid] || [];
+  const ids = new Set(alumnos.map((a) => a.id));
+  const itemIds = new Set(items.map((i) => i.id));
+
+  const resumen = {};
+  for (const a of alumnos) {
+    const ci = cierreDe(a.id);
+    resumen[a.id] = {
+      c1: ci.c1, c2: ci.c2,
+      promedio: ci.promedio === null ? null : Number(ci.promedio.toFixed(2)),
+      conducta1: conductaDe(a.id, 1), conducta2: conductaDe(a.id, 2),
+    };
+  }
+
+  D.archivo = D.archivo || {};
+  D.archivo[cid] = {
+    curso: { id: cid, etiqueta: curso.etiqueta },
+    ciclo: D.config.ciclo,
+    fecha: hoyISO(),
+    alumnos: alumnos.map((a) => ({ id: a.id, nombre: a.nombre })),
+    items: items.map((i) => JSON.parse(JSON.stringify(i))),
+    notas: D.notas.filter((n) => itemIds.has(n.item)),
+    conducta: D.conducta.filter((e) => ids.has(e.alumno)),
+    manual: D.manual.filter((m) => ids.has(m.alumno)),
+    finales: D.finales.filter((f) => ids.has(f.alumno)),
+    valoraciones: (D.valoraciones || []).filter((v) => ids.has(v.alumno)),
+    resumen,
+  };
+
+  D.items = D.items.filter((i) => !itemIds.has(i.id));
+  D.notas = D.notas.filter((n) => !itemIds.has(n.item));
+  D.conducta = D.conducta.filter((e) => !ids.has(e.alumno));
+  D.manual = D.manual.filter((m) => !ids.has(m.alumno));
+  D.finales = D.finales.filter((f) => !ids.has(f.alumno));
+  D.valoraciones = (D.valoraciones || []).filter((v) => !ids.has(v.alumno));
+
+  /* Los bloques del curso dejan de existir para esta app. Si quedaran
+     pendientes, cada sincronización intentaría subir un curso que ya cerró. */
+  for (const k of clavesDelCurso(cid, items)) {
+    delete D.editado[k];
+    if (D.sync && D.sync.enviados) delete D.sync.enviados[k];
+  }
+
+  D.archivado = D.archivado || {};
+  D.archivado[cid] = { ciclo: D.config.ciclo, fecha: hoyISO(),
+                       ts: new Date().toISOString(), activo: true };
+  marcarEdicion("arch");
+  marcarEdicion("arch|" + cid);
+  marcarEdicion("items");
+  guardar(); reindexar();
+  return { alumnos: alumnos.length, items: items.length,
+           notas: D.archivo[cid].notas.length };
+}
+
+/** Vuelve a abrir un ciclo cerrado. Solo se puede si el curso sigue en el
+ *  padrón: los alumnos son de la app de asistencia, y si allá se dieron de
+ *  baja, acá no hay dónde devolverlos. */
+function desarchivarCurso(cid) {
+  const f = (D.archivo || {})[cid];
+  if (!f) return { ok: false, motivo: "No hay nada archivado de ese curso." };
+  const enPadron = (D.cursos || []).some((c) => c.id === cid);
+  if (!enPadron) {
+    return { ok: false, motivo: "Ese curso ya no está en el padrón de la app de " +
+      "asistencia. Para volver a abrirlo, primero tiene que existir allá de nuevo." };
+  }
+  const vivos = new Set((D.alumnos || []).filter((a) => a.curso === cid).map((a) => a.id));
+  const faltan = f.alumnos.filter((a) => !vivos.has(a.id)).length;
+
+  const itemIds = new Set(f.items.map((i) => i.id));
+  D.items = D.items.filter((i) => !itemIds.has(i.id)).concat(f.items);
+  D.notas = D.notas.filter((n) => !itemIds.has(n.item)).concat(f.notas);
+  const ids = new Set(f.alumnos.map((a) => a.id));
+  D.conducta = D.conducta.filter((e) => !ids.has(e.alumno)).concat(f.conducta);
+  D.manual = D.manual.filter((m) => !ids.has(m.alumno)).concat(f.manual);
+  D.finales = D.finales.filter((x) => !ids.has(x.alumno)).concat(f.finales);
+  D.valoraciones = (D.valoraciones || []).filter((v) => !ids.has(v.alumno))
+                     .concat(f.valoraciones || []);
+
+  D.archivado[cid] = { ts: new Date().toISOString(), activo: false };
+  delete D.archivo[cid];
+  marcarEdicion("arch");
+  marcarEdicion("arch|" + cid);
+  marcarEdicion("items");
+  for (const k of clavesDelCurso(cid, f.items)) marcarEdicion(k);
+  guardar(); reindexar();
+  return { ok: true, faltan };
+}
+
 /* ---------------- navegación ---------------- */
-const VISTAS = ["cargar", "conducta", "alumno", "curso", "datos"];
+const VISTAS = ["cargar", "conducta", "alumno", "curso", "archivo", "datos"];
 function mostrar(v) {
   for (const x of VISTAS) $("#v-" + x).classList.toggle("oculto", x !== v);
   for (const b of $("#nav").children) b.setAttribute("aria-current", String(b.dataset.v === v));
@@ -763,6 +995,7 @@ function mostrar(v) {
   if (v === "conducta") pintarConducta();
   if (v === "alumno") pintarAlumno();
   if (v === "curso") pintarCurso();
+  if (v === "archivo") pintarArchivo();
   if (v === "datos") pintarDatos();
 }
 $("#nav").addEventListener("click", (ev) => {
@@ -771,9 +1004,11 @@ $("#nav").addEventListener("click", (ev) => {
 });
 
 function llenarCursos(sel, valor) {
+  // los archivados no: son de un ciclo cerrado y viven en la pestaña Archivo
+  const cursos = D.cursos.filter((c) => !cursoArchivado(c.id));
   sel.innerHTML = "";
-  for (const c of D.cursos) sel.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
-  if (valor && D.cursos.some((c) => c.id === valor)) sel.value = valor;
+  for (const c of cursos) sel.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
+  if (valor && cursos.some((c) => c.id === valor)) sel.value = valor;
 }
 
 /* La lista de trabajos del año, la misma del original. Un curso que llega nuevo
@@ -1176,7 +1411,16 @@ $("#btnGuardarNotas").addEventListener("click", () => {
   alerta("#avisoCargar", `Guardado ${it.nombre}: ${puestas} notas.`, "ok");
 });
 
-$("#selCurso").addEventListener("change", () => { llenarItems(); pintarCargar(); });
+$("#selCurso").addEventListener("change", () => {
+  // la previa era de otro curso: se descarta para no cargar en el equivocado
+  if (importado || $("#previaImportar").innerHTML) {
+    importado = null; $("#previaImportar").innerHTML = ""; $("#avisoImportar").innerHTML = "";
+    if ($("#txtImportar").value.trim()) {
+      alerta("#avisoImportar", "Cambiaste de curso: revisá la planilla de nuevo antes de cargarla.", "alerta");
+    }
+  }
+  llenarItems(); pintarCargar();
+});
 $("#selItem").addEventListener("change", pintarCargar);
 
 $("#btnNuevoItem").addEventListener("click", () => {
@@ -1215,6 +1459,261 @@ function alerta(sel, txt, tipo) {
   const el = $(sel);
   if (el) el.innerHTML = `<div class="aviso ${tipo}">${esc(txt)}</div>`;
 }
+
+/* ================= CARGAR UNA PLANILLA =================
+   Pegada desde Excel (llega con tabulaciones) o de un archivo CSV. Nada se
+   guarda hasta que se ve la previa: lo que no se pueda cruzar con seguridad se
+   muestra y se deja afuera, nunca se adivina a quién corresponde una nota. */
+
+const sinAcentos = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+/** Para comparar nombres: sin acentos, sin comas ni puntos, todo junto y en mayúscula. */
+const normNombre = (s) => sinAcentos(String(s || ""))
+  .toLocaleUpperCase("es").replace(/[.,;]/g, " ").replace(/\s+/g, " ").trim();
+
+/** Separa una línea respetando las comillas dobles del CSV. */
+function partirLinea(linea, sep) {
+  const celdas = [];
+  let act = "", dentro = false;
+  for (let i = 0; i < linea.length; i++) {
+    const ch = linea[i];
+    if (ch === '"') {
+      if (dentro && linea[i + 1] === '"') { act += '"'; i++; }
+      else dentro = !dentro;
+    } else if (ch === sep && !dentro) { celdas.push(act); act = ""; }
+    else act += ch;
+  }
+  celdas.push(act);
+  return celdas.map((c) => c.trim());
+}
+
+/** Tabulación si viene de Excel; si no, el que más aparezca. */
+function separadorDe(texto) {
+  const primera = texto.split(/\r?\n/)[0] || "";
+  const cuenta = (c) => (primera.match(new RegExp("\\" + c, "g")) || []).length;
+  if (cuenta("\t")) return "\t";
+  return cuenta(";") >= cuenta(",") ? ";" : ",";
+}
+
+function grillaDe(texto) {
+  const sep = separadorDe(texto);
+  return texto.split(/\r?\n/).filter((l) => l.trim() !== "")
+    .map((l) => partirLinea(l, sep));
+}
+
+/** El alumno del curso que corresponde a un nombre escrito en la planilla.
+ *  Primero exacto; si no, por palabras, y solo si hay UNO solo que encaje. */
+function cruzarAlumno(txt, alumnos) {
+  const n = normNombre(txt);
+  if (!n) return null;
+  const exactos = alumnos.filter((a) => normNombre(a.nombre) === n);
+  if (exactos.length === 1) return exactos[0];
+  if (exactos.length > 1) return null;              // dos alumnos iguales: decidís vos
+  const palabras = n.split(" ").filter(Boolean);
+  if (palabras.length < 2) return null;             // con un apellido solo no alcanza
+  const posibles = alumnos.filter((a) => {
+    const suyas = normNombre(a.nombre).split(" ");
+    return palabras.every((p) => suyas.includes(p));
+  });
+  return posibles.length === 1 ? posibles[0] : null;
+}
+
+/* Las columnas que no son un trabajo sino una nota de cierre. */
+const COLUMNAS_CIERRE = [
+  { claves: ["NOTA FINAL", "NOTA FINAL DEL ANO", "FINAL"], tipo: "final", et: "Nota final" },
+  { claves: ["DICIEMBRE"], tipo: "diciembre", et: "Diciembre" },
+  { claves: ["FEBRERO"], tipo: "febrero", et: "Febrero" },
+  { claves: ["1ER CUATRIMESTRE", "NOTA DEL 1ER CUATRIMESTRE", "CUATRIMESTRE 1", "C1"],
+    tipo: "cuat", cuat: 1, et: "Nota del 1er cuatrimestre" },
+  { claves: ["2DO CUATRIMESTRE", "NOTA DEL 2DO CUATRIMESTRE", "CUATRIMESTRE 2", "C2"],
+    tipo: "cuat", cuat: 2, et: "Nota del 2do cuatrimestre" },
+];
+
+/** Qué es cada columna: un trabajo del curso, una nota de cierre, o nada. */
+function cruzarColumna(titulo, items) {
+  const n = normNombre(titulo);
+  if (!n) return { clase: "vacia" };
+  for (const c of COLUMNAS_CIERRE) {
+    if (c.claves.some((k) => normNombre(k) === n)) return { clase: "cierre", cierre: c };
+  }
+  // el nombre completo, o lo que va antes de los dos puntos (TP1: "...")
+  const it = items.find((i) => normNombre(i.nombre) === n ||
+                               normNombre(i.nombre.split(":")[0]) === n);
+  if (!it) return { clase: "desconocida" };
+  if (it.tipo === "conducta") return { clase: "conducta", item: it };
+  return { clase: "item", item: it };
+}
+
+let importado = null;
+
+function leerPlanilla(texto, cid) {
+  const filas = grillaDe(texto);
+  if (filas.length < 2) return { error: "Hacen falta al menos el renglón de títulos y un alumno." };
+  const alumnos = IDX.porCurso[cid] || [];
+  if (!alumnos.length) return { error: "Este curso no tiene alumnos." };
+  const items = IDX.itemsPorCurso[cid] || [];
+
+  const titulos = filas[0];
+  const columnas = titulos.slice(1).map((t, i) =>
+    Object.assign({ titulo: t, col: i + 1 }, cruzarColumna(t, items)));
+
+  const sinCruce = [], celdas = [], fueraDeEscala = [];
+  const vistos = new Set();
+  for (const fila of filas.slice(1)) {
+    const quien = fila[0];
+    if (!String(quien || "").trim()) continue;
+    const al = cruzarAlumno(quien, alumnos);
+    if (!al) { sinCruce.push(quien); continue; }
+    if (vistos.has(al.id)) { sinCruce.push(quien + " (repetido)"); continue; }
+    vistos.add(al.id);
+    for (const c of columnas) {
+      if (c.clase !== "item" && c.clase !== "cierre") continue;
+      const bruto = String(fila[c.col] ?? "").trim();
+      if (bruto === "" || bruto === "-" || bruto === "—") continue;   // vacío: no se toca
+      const num = Number(bruto.replace(",", "."));
+      if (!isFinite(num)) { fueraDeEscala.push(`${al.nombre}: "${bruto}"`); continue; }
+      const v = Math.round(num);
+      if (v < D.config.escalaMin || v > D.config.escalaMax) {
+        fueraDeEscala.push(`${al.nombre}: ${bruto}`); continue;
+      }
+      celdas.push({ alumno: al, columna: c, valor: v });
+    }
+  }
+  return { columnas, celdas, sinCruce, fueraDeEscala,
+           alumnosCruzados: vistos.size, filas: filas.length - 1 };
+}
+
+function pintarPreviaImportar() {
+  const cont = $("#previaImportar");
+  const cid = $("#selCurso").value;
+  const texto = $("#txtImportar").value;
+  $("#avisoImportar").innerHTML = "";
+  if (!texto.trim()) { cont.innerHTML = ""; importado = null; return; }
+
+  const r = leerPlanilla(texto, cid);
+  if (r.error) { cont.innerHTML = ""; importado = null;
+                 alerta("#avisoImportar", r.error, "mal"); return; }
+  importado = Object.assign({ curso: cid }, r);
+
+  const reconocidas = r.columnas.filter((c) => c.clase === "item" || c.clase === "cierre");
+  const ignoradas = r.columnas.filter((c) => c.clase === "desconocida" || c.clase === "conducta");
+
+  let h = `<div class="kpis">
+    <div class="kpi p"><div class="v">${r.celdas.length}</div><div class="e">Notas a cargar</div></div>
+    <div class="kpi"><div class="v">${r.alumnosCruzados}</div><div class="e">Alumnos</div></div>
+    <div class="kpi ${reconocidas.length ? "" : "a"}"><div class="v">${reconocidas.length}</div>
+      <div class="e">Columnas</div></div>
+    <div class="kpi ${r.sinCruce.length ? "a" : ""}"><div class="v">${r.sinCruce.length}</div>
+      <div class="e">Sin cruzar</div></div>
+  </div>
+  <div class="acciones">
+    <button class="btn" id="btnConfirmarImportar" ${r.celdas.length ? "" : "disabled"}>
+      Cargar ${r.celdas.length} notas</button></div>`;
+
+  h += `<div class="tabla-wrap"><table><tr><th>Columna</th><th>Se carga como</th></tr>`;
+  for (const c of r.columnas) {
+    if (c.clase === "vacia") continue;
+    const cuantas = r.celdas.filter((x) => x.columna === c).length;
+    let dice, clase = "";
+    if (c.clase === "item") dice = esc(c.item.nombre) + ` — ${cuantas} notas`;
+    else if (c.clase === "cierre") dice = c.cierre.et + ` — ${cuantas} notas`;
+    else if (c.clase === "conducta") { dice = "la conducta se arma con episodios: se ignora"; clase = "riesgo"; }
+    else { dice = "no coincide con ningún trabajo del curso: se ignora"; clase = "riesgo"; }
+    h += `<tr class="${clase}"><td>${esc(c.titulo)}</td><td>${dice}</td></tr>`;
+  }
+  h += `</table></div>`;
+
+  if (r.sinCruce.length) {
+    h += `<p class="aviso alerta"><strong>Estos nombres no los pude cruzar con
+      ningún alumno del curso</strong>, así que sus notas quedan afuera:
+      ${r.sinCruce.map(esc).join(", ")}.</p>`;
+  }
+  if (r.fueraDeEscala.length) {
+    h += `<p class="aviso alerta"><strong>Valores que no son una nota del ${
+      D.config.escalaMin} al ${D.config.escalaMax}</strong>, quedan afuera:
+      ${r.fueraDeEscala.slice(0, 12).map(esc).join(" · ")}${
+      r.fueraDeEscala.length > 12 ? " …" : ""}.</p>`;
+  }
+  if (ignoradas.length && reconocidas.length) {
+    h += `<p class="nota-pie">Las columnas que no reconozco no rompen nada: se saltean.
+      Si alguna es un trabajo que existe con otro nombre, renombralo en Datos y volvé a probar.</p>`;
+  }
+  h += `<p class="nota-pie">Las casillas vacías de la planilla no borran lo que ya
+    tengas cargado, y las notas de los alumnos que no figuren quedan como están.</p>`;
+  cont.innerHTML = h;
+
+  const b = document.getElementById("btnConfirmarImportar");
+  if (b) b.addEventListener("click", confirmarImportar);
+}
+
+function confirmarImportar() {
+  if (!importado || !importado.celdas.length) return;
+  const cid = importado.curso;
+  const porItem = new Map(), porCierre = new Map();
+  for (const c of importado.celdas) {
+    const mapa = c.columna.clase === "item" ? porItem : porCierre;
+    const clave = c.columna.clase === "item" ? c.columna.item.id : c.columna.cierre;
+    if (!mapa.has(clave)) mapa.set(clave, []);
+    mapa.get(clave).push(c);
+  }
+
+  for (const [itemId, celdas] of porItem) {
+    const ids = new Set(celdas.map((c) => c.alumno.id));
+    // solo se pisan los alumnos que vienen en la planilla
+    D.notas = D.notas.filter((n) => !(n.item === itemId && ids.has(n.alumno)));
+    for (const c of celdas) D.notas.push({ alumno: c.alumno.id, item: itemId, valor: c.valor });
+    marcarEdicion("n|" + itemId);
+  }
+
+  for (const [cierre, celdas] of porCierre) {
+    if (cierre.tipo === "cuat") {
+      const ids = new Set(celdas.map((c) => c.alumno.id));
+      D.manual = D.manual.filter((m) => !(ids.has(m.alumno) && +m.cuatrimestre === cierre.cuat));
+      for (const c of celdas) {
+        D.manual.push({ alumno: c.alumno.id, cuatrimestre: cierre.cuat, valor: c.valor });
+      }
+      marcarEdicion("q|" + cid + "|" + cierre.cuat);
+    } else {
+      for (const c of celdas) guardarCierre(c.alumno.id, cierre.tipo, c.valor);
+    }
+  }
+
+  const cuantas = importado.celdas.length;
+  importado = null;
+  $("#txtImportar").value = "";
+  $("#previaImportar").innerHTML = "";
+  guardar(); reindexar(); llenarItems(); pintarCargar(); sincronizarDespues();
+  alerta("#avisoImportar", `Cargadas ${cuantas} notas.`, "ok");
+}
+
+/* Mientras se está cargando una planilla, la barra fija de abajo estorba: tapa
+   el botón de confirmar y encima dice "Guardar notas", que en ese momento no se
+   sabe si guarda la lista de arriba o la planilla. */
+function verPanelImportar(ver) {
+  $("#panelImportar").classList.toggle("oculto", !ver);
+  $("#barraGuardar").classList.toggle("oculto", ver);
+}
+
+$("#btnAbrirImportar").addEventListener("click", () => {
+  const abierto = $("#panelImportar").classList.contains("oculto");
+  verPanelImportar(abierto);
+  if (abierto) {
+    $("#txtImportar").focus();
+    $("#panelImportar").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+});
+$("#btnCerrarImportar").addEventListener("click", () => {
+  verPanelImportar(false);
+  $("#txtImportar").value = ""; $("#previaImportar").innerHTML = "";
+  $("#avisoImportar").innerHTML = ""; importado = null;
+});
+$("#btnPrevisualizar").addEventListener("click", pintarPreviaImportar);
+$("#btnArchivoImportar").addEventListener("click", () => $("#fileImportar").click());
+$("#fileImportar").addEventListener("change", (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  const lec = new FileReader();
+  lec.onload = () => { $("#txtImportar").value = lec.result; pintarPreviaImportar(); ev.target.value = ""; };
+  lec.readAsText(f, "utf-8");
+});
 
 /* ================= CONDUCTA ================= */
 let condAbierta = null;
@@ -1691,6 +2190,288 @@ $("#cuCurso").addEventListener("change", pintarCurso);
 $("#cuCuat").addEventListener("change", pintarCurso);
 $("#btnImprimirCurso").addEventListener("click", () => window.print());
 
+/* ================= ARCHIVO =================
+   Lo único editable de un ciclo cerrado son las tres notas del cierre.
+   Diciembre y febrero se rinden después de que el año terminó —febrero, con el
+   año nuevo ya empezado— y esa nota tiene que poder entrar sin reabrir nada. */
+const CAMPOS_CIERRE = [
+  { campo: "final",     et: "Final" },
+  { campo: "diciembre", et: "Diciembre" },
+  { campo: "febrero",   et: "Febrero" },
+];
+
+function llenarSelectsArchivo() {
+  const sa = $("#arCurso"), previo = sa.value;
+  sa.innerHTML = "";
+  for (const c of D.cursos) {
+    if (cursoArchivado(c.id)) continue;
+    sa.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
+  }
+  if (previo && [...sa.options].some((o) => o.value === previo)) sa.value = previo;
+
+  const sv = $("#arVer"), previoV = sv.value;
+  sv.innerHTML = "";
+  const archivados = cursosArchivados().sort((a, b) =>
+    etiquetaArchivada(a).localeCompare(etiquetaArchivada(b), "es"));
+  for (const cid of archivados) {
+    const f = (D.archivo || {})[cid] || {};
+    sv.appendChild(crear("option", { value: cid,
+      textContent: `${f.ciclo || ""} · ${etiquetaArchivada(cid)}` }));
+  }
+  if (previoV && [...sv.options].some((o) => o.value === previoV)) sv.value = previoV;
+}
+
+/** Notas que quedaron sin dueño: el alumno ya no está en el padrón.
+ *  Pasa si se dio de baja el curso en la app de asistencia sin archivarlo acá
+ *  primero. No se pierde nada, pero hay que rescatarlo antes de que se olvide. */
+function huerfanos() {
+  const vivos = new Set(D.alumnos.map((a) => a.id));
+  const sueltos = {};
+  const anotar = (aid) => {
+    if (vivos.has(aid) || sueltos[aid]) return;
+    const n = (D.nombres || {})[aid];
+    sueltos[aid] = { id: aid, nombre: n ? n.nombre : "(nombre desconocido)",
+                     etiqueta: n ? n.etiqueta : "" };
+  };
+  for (const n of D.notas) anotar(n.alumno);
+  for (const m of D.manual) anotar(m.alumno);
+  for (const f of D.finales) anotar(f.alumno);
+  for (const e of D.conducta) anotar(e.alumno);
+  for (const v of (D.valoraciones || [])) anotar(v.alumno);
+  return Object.values(sueltos);
+}
+
+function pintarHuerfanos() {
+  const cont = $("#panelHuerfanos");
+  const h = huerfanos();
+  if (!h.length) { cont.innerHTML = ""; cont.classList.add("oculto"); return; }
+  cont.classList.remove("oculto");
+  const porCurso = {};
+  for (const x of h) (porCurso[x.etiqueta || "(curso desconocido)"] ||= []).push(x);
+  cont.innerHTML = `<h2>Notas sin dueño</h2>
+    <p class="aviso alerta"><strong>Hay ${h.length} ${h.length === 1 ? "alumno" : "alumnos"}
+      con notas cargadas que ya no ${h.length === 1 ? "está" : "están"} en el padrón.</strong>
+      Puede ser alguien dado de baja en la app de asistencia, o un curso entero que se
+      dio de baja allá sin archivarlo acá primero. Las notas están, pero no hay pantalla
+      que las muestre.</p>
+    <div class="tabla-wrap"><table><tr><th>Curso</th><th class="num">Alumnos</th></tr>
+      ${Object.entries(porCurso).map(([et, xs]) =>
+        `<tr><td>${esc(et)}</td><td class="num">${xs.length}</td></tr>`).join("")}
+    </table></div>
+    <div class="acciones"><button class="btn" id="btnRescatar">Rescatarlas al archivo</button></div>
+    <p class="nota-pie">Se guardan como un ciclo cerrado más, con los nombres que
+      esta app tenga anotados.</p>`;
+  $("#btnRescatar").addEventListener("click", rescatarHuerfanos);
+}
+
+/** Mete los huérfanos en un archivo aparte, para que dejen de estar en el aire. */
+function rescatarHuerfanos() {
+  const h = huerfanos();
+  if (!h.length) return;
+  const ids = new Set(h.map((x) => x.id));
+  const cid = "RESCATE-" + hoyISO().replace(/-/g, "");
+  const itemIds = new Set(D.notas.filter((n) => ids.has(n.alumno)).map((n) => n.item));
+
+  D.archivo = D.archivo || {};
+  D.archivo[cid] = {
+    curso: { id: cid, etiqueta: "Rescate de notas sin dueño" },
+    ciclo: D.config.ciclo, fecha: hoyISO(), rescate: true,
+    alumnos: h.map((x) => ({ id: x.id, nombre: x.nombre + (x.etiqueta ? ` (${x.etiqueta})` : "") })),
+    items: D.items.filter((i) => itemIds.has(i.id)).map((i) => JSON.parse(JSON.stringify(i))),
+    notas: D.notas.filter((n) => ids.has(n.alumno)),
+    conducta: D.conducta.filter((e) => ids.has(e.alumno)),
+    manual: D.manual.filter((m) => ids.has(m.alumno)),
+    finales: D.finales.filter((f) => ids.has(f.alumno)),
+    valoraciones: (D.valoraciones || []).filter((v) => ids.has(v.alumno)),
+    resumen: {},
+  };
+  D.notas = D.notas.filter((n) => !ids.has(n.alumno));
+  D.conducta = D.conducta.filter((e) => !ids.has(e.alumno));
+  D.manual = D.manual.filter((m) => !ids.has(m.alumno));
+  D.finales = D.finales.filter((f) => !ids.has(f.alumno));
+  D.valoraciones = (D.valoraciones || []).filter((v) => !ids.has(v.alumno));
+
+  D.archivado = D.archivado || {};
+  D.archivado[cid] = { ciclo: D.config.ciclo, fecha: hoyISO(),
+                       ts: new Date().toISOString(), activo: true };
+  marcarEdicion("arch"); marcarEdicion("arch|" + cid);
+  guardar(); reindexar(); llenarSelectsArchivo();
+  $("#arVer").value = cid;
+  pintarArchivo(); sincronizarDespues();
+  alerta("#avisoArchivo", `Rescatadas las notas de ${h.length} alumnos.`, "ok");
+}
+
+function pintarArchivo() {
+  llenarSelectsArchivo();
+  pintarHuerfanos();
+  const cont = $("#fichaArchivo");
+  const cid = $("#arVer").value;
+  const f = (D.archivo || {})[cid];
+  if (!f) {
+    cont.innerHTML = `<div class="panel"><p class="aviso info">Todavía no archivaste
+      ningún curso. Cuando cierres uno, va a aparecer acá.</p></div>`;
+    return;
+  }
+
+  const items = (f.items || []).filter((i) => i.tipo !== "conducta")
+    .sort((a, b) => (a.cuatrimestre - b.cuatrimestre) || (a.orden - b.orden));
+  const nota = {};
+  for (const n of (f.notas || [])) nota[n.alumno + "|" + n.item] = n.valor;
+  const fin = {};
+  for (const g of (f.finales || [])) fin[g.alumno] = g;
+  const alumnos = (f.alumnos || []).slice()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+
+  let h = `<div class="panel">
+    <h2>${esc(etiquetaArchivada(cid))} <small style="font-weight:500">· ciclo ${
+      f.ciclo || ""}</small></h2>
+    <p class="nota-pie">Cerrado el ${f.fecha ? fechaLarga(f.fecha) : "—"}.
+      ${f.rescate ? "Rescate de notas que habían quedado sin dueño. " : ""}Los trabajos y
+      la conducta quedaron congelados. <strong>Las tres notas del cierre se siguen
+      pudiendo escribir</strong>: es donde va lo que se rinde en diciembre y febrero.</p>
+    <div class="tabla-wrap"><table>
+      <tr><th>Alumno</th><th class="num">1º</th><th class="num">2º</th>
+          <th class="num">Prom.</th>${CAMPOS_CIERRE.map((c) =>
+            `<th class="num">${c.et}</th>`).join("")}</tr>`;
+  for (const a of alumnos) {
+    const r = (f.resumen || {})[a.id] || {};
+    const g = fin[a.id] || {};
+    h += `<tr><td class="col-nombre"><span class="nombre-alumno">${esc(a.nombre)}</span></td>
+      <td class="num">${r.c1 ?? "—"}</td><td class="num">${r.c2 ?? "—"}</td>
+      <td class="num">${r.promedio === null || r.promedio === undefined
+        ? "—" : r.promedio.toFixed(2)}</td>` +
+      CAMPOS_CIERRE.map((c) => `<td class="num"><input type="number" class="nota"
+        style="width:56px;height:40px" inputmode="numeric" min="${D.config.escalaMin}"
+        max="${D.config.escalaMax}" step="1" data-cid="${cid}" data-a="${a.id}"
+        data-campo="${c.campo}" value="${g[c.campo] ?? ""}"></td>`).join("") + `</tr>`;
+  }
+  h += `</table></div>
+    <p class="nota-pie">Se guarda solo, apenas escribís.</p></div>`;
+
+  /* la planilla congelada, para consultar */
+  if (items.length) {
+    h += `<div class="panel"><h2>Planilla del año</h2><div class="tabla-wrap"><table>
+      <tr><th>Alumno</th>${items.map((i) =>
+        `<th class="num" title="${esc(i.nombre)}">${esc(i.nombre.split(":")[0])}</th>`).join("")}
+      <th class="num">Cond. 1º</th><th class="num">Cond. 2º</th></tr>`;
+    for (const a of alumnos) {
+      const r = (f.resumen || {})[a.id] || {};
+      h += `<tr><td class="col-nombre"><span class="nombre-alumno">${esc(a.nombre)}</span></td>` +
+        items.map((i) => {
+          const v = nota[a.id + "|" + i.id];
+          return `<td class="num">${v === undefined ? "—" : v}</td>`;
+        }).join("") +
+        `<td class="num">${r.conducta1 ?? "—"}</td><td class="num">${r.conducta2 ?? "—"}</td></tr>`;
+    }
+    h += `</table></div></div>`;
+  }
+  cont.innerHTML = h;
+}
+
+/** Guarda una nota de cierre dentro de un ciclo ya cerrado. */
+function guardarCierreArchivado(cid, aid, campo, valor) {
+  const f = (D.archivo || {})[cid];
+  if (!f) return;
+  f.finales = f.finales || [];
+  let g = f.finales.find((x) => x.alumno === aid);
+  if (!g) { g = { alumno: aid }; f.finales.push(g); }
+  if (valor === null) delete g[campo];
+  else g[campo] = valor;
+  if (Object.keys(g).length === 1) f.finales = f.finales.filter((x) => x !== g);
+  marcarEdicion("arch|" + cid);
+  guardar(); sincronizarDespues();
+  marcarGuardado("Guardado");
+}
+
+$("#fichaArchivo").addEventListener("input", (ev) => {
+  const inp = ev.target.closest("input[data-campo]");
+  if (!inp) return;
+  let v = inp.value.trim();
+  if (v === "") { guardarCierreArchivado(inp.dataset.cid, inp.dataset.a, inp.dataset.campo, null); return; }
+  let n = Math.round(Number(v));
+  if (isNaN(n)) return;
+  n = Math.max(D.config.escalaMin, Math.min(D.config.escalaMax, n));
+  if (String(n) !== inp.value) inp.value = String(n);
+  guardarCierreArchivado(inp.dataset.cid, inp.dataset.a, inp.dataset.campo, n);
+});
+
+$("#arVer").addEventListener("change", pintarArchivo);
+$("#btnImprimirArchivo").addEventListener("click", () => window.print());
+
+$("#btnArchivar").addEventListener("click", () => {
+  const cid = $("#arCurso").value;
+  const curso = IDX.cursoPorId[cid];
+  if (!curso) { alerta("#avisoArchivo", "Elegí un curso.", "mal"); return; }
+  const alumnos = (IDX.porCurso[cid] || []).length;
+  const sinFinal = (IDX.porCurso[cid] || [])
+    .filter((a) => (IDX.final[a.id] || {}).final == null).length;
+  const aviso = sinFinal
+    ? `\n\nOJO: ${sinFinal} de ${alumnos} alumnos no tienen nota final cargada.`
+    : "";
+  if (!confirm(`¿Archivar "${curso.etiqueta}"?\n\nSale de todas las pantallas y sus ` +
+      `${alumnos} alumnos dejan de aparecer. No se pierde nada: queda en el Archivo, ` +
+      `y las notas de final, diciembre y febrero se siguen pudiendo escribir ahí.` +
+      aviso)) return;
+  const r = archivarCurso(cid);
+  if (!r) { alerta("#avisoArchivo", "No se pudo archivar ese curso.", "mal"); return; }
+  refrescarSelects(); llenarSelectsArchivo();
+  $("#arVer").value = cid;
+  pintarArchivo(); sincronizarDespues();
+  alerta("#avisoArchivo", `Archivado "${curso.etiqueta}": ${r.alumnos} alumnos, ` +
+    `${r.items} trabajos y ${r.notas} notas.`, "ok");
+});
+
+$("#btnDesarchivar").addEventListener("click", () => {
+  const cid = $("#arVer").value;
+  if (!cid) return;
+  if (!confirm(`¿Volver a abrir "${etiquetaArchivada(cid)}"?\n\nVuelve a aparecer en ` +
+    `todas las pantallas, con sus trabajos y sus notas.`)) return;
+  const r = desarchivarCurso(cid);
+  if (!r.ok) { alerta("#avisoArchivo", r.motivo, "mal"); return; }
+  refrescarSelects(); llenarSelectsArchivo(); pintarArchivo(); sincronizarDespues();
+  alerta("#avisoArchivo", `Abierto de nuevo "${etiquetaArchivada(cid)}".` +
+    (r.faltan ? ` Ojo: ${r.faltan} alumnos ya no están en el padrón y sus notas ` +
+      `quedan sin dueño hasta que vuelvan a darse de alta.` : ""),
+    r.faltan ? "alerta" : "ok");
+});
+
+$("#btnCsvArchivo").addEventListener("click", () => {
+  const cid = $("#arVer").value;
+  const f = (D.archivo || {})[cid];
+  if (!f) return;
+  const filas = [["Ciclo", "Curso", "Alumno", "Cuatrimestre", "Item", "Tipo", "Nota"]];
+  const et = etiquetaArchivada(cid);
+  const nota = {};
+  for (const n of (f.notas || [])) nota[n.alumno + "|" + n.item] = n.valor;
+  const fin = {};
+  for (const g of (f.finales || [])) fin[g.alumno] = g;
+  for (const a of (f.alumnos || [])) {
+    for (const i of (f.items || [])) {
+      const v = nota[a.id + "|" + i.id];
+      if (v === undefined) continue;
+      filas.push([f.ciclo, et, a.nombre, i.cuatrimestre, i.nombre, i.tipo, v]);
+    }
+    const r = (f.resumen || {})[a.id] || {};
+    for (const [cu, v] of [[1, r.c1], [2, r.c2]]) {
+      if (v !== null && v !== undefined) {
+        filas.push([f.ciclo, et, a.nombre, cu, "NOTA DEL CUATRIMESTRE", "cerrada", v]);
+      }
+    }
+    for (const [cu, v] of [[1, r.conducta1], [2, r.conducta2]]) {
+      if (v !== null && v !== undefined) {
+        filas.push([f.ciclo, et, a.nombre, cu, "CONDUCTA", "cerrada", v]);
+      }
+    }
+    const g = fin[a.id] || {};
+    for (const c of CAMPOS_CIERRE) {
+      if (g[c.campo] != null) {
+        filas.push([f.ciclo, et, a.nombre, "", c.et.toUpperCase(), "cargada a mano", g[c.campo]]);
+      }
+    }
+  }
+  bajar(`archivo_${f.ciclo || ""}_${et.replace(/[^A-Za-z0-9]+/g, "_")}.csv`, csv(filas));
+});
+
 /* ================= DATOS ================= */
 function pintarDatos() {
   llenarCursos($("#gItemCurso"), $("#gItemCurso").value);
@@ -1709,6 +2490,10 @@ function pintarDatos() {
     <tr><td>Cierres de año cargados</td><td class="num">${D.finales.length}</td></tr>
     <tr><td>Valoraciones TEA/TEP/TED</td><td class="num">${(D.valoraciones || []).length}</td></tr>
     <tr><td>Jornadas de asistencia leídas</td><td class="num">${Object.keys(D.asistencia || {}).length}</td></tr>
+    <tr><td>Cursos archivados</td><td class="num">${cursosArchivados().length}</td></tr>
+    <tr><td>Notas guardadas en el archivo</td><td class="num">${
+      Object.values(D.archivo || {}).reduce((t, f) => t + (f.notas || []).length, 0)}</td></tr>
+    <tr><td>Ciclo en curso</td><td class="num"><strong>${D.config.ciclo}</strong></td></tr>
   </table></div>`;
 }
 
@@ -1830,8 +2615,11 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
       if (!d.alumnos || !d.items) throw new Error("formato");
       if (!confirm("Esto reemplaza todo lo que hay en este dispositivo. ¿Seguir?")) return;
       D = d;
-      for (const k of ["asistencia", "editado", "sync", "bajas"]) D[k] = D[k] || {};
+      for (const k of ["asistencia", "editado", "sync", "bajas",
+                       "archivado", "archivo", "nombres"]) D[k] = D[k] || {};
       for (const k of ["notas", "conducta", "manual", "finales", "valoraciones"]) D[k] = D[k] || [];
+      if (!D.config) D.config = {};
+      if (!D.config.ciclo) D.config.ciclo = CICLO;
       guardar(); reindexar(); refrescarSelects(); pintarDatos();
       alerta("#avisoDatos", "Copia restaurada.", "ok");
     } catch (e) { alerta("#avisoDatos", "Ese archivo no es una copia válida.", "mal"); }
@@ -1854,10 +2642,24 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
      q|<curso>|<c>  las notas de cuatrimestre puestas a mano
      f|<curso>      el cierre del ano: nota final, diciembre y febrero
      v|<curso>|<i>  las valoraciones TEA/TEP/TED del informe <i> (1 o 2)
+     arch           que cursos estan archivados y de que ciclo
+     arch|<curso>   el ciclo cerrado de un curso, con TODO adentro
 
    Lo que esta app LEE pero no toca: el padron y las jornadas, que son
    de la app de asistencia. Por eso el mismo alumno es uno solo en las
    dos, y por eso la ficha puede mostrar asistencia y notas juntas.
+
+   EL ARCHIVO ES PROPIO. El padron se REEMPLAZA entero con lo que manda
+   asistencia: el dia que se den de baja los cursos del ano pasado, sus
+   alumnos desaparecen de aca. Por eso el archivo se guarda con los
+   nombres adentro y en un bloque nuestro, que asistencia no toca. Y por
+   eso archivar hay que hacerlo ANTES de dar de baja nada alla.
+
+   Un curso archivado se filtra de todo lo vivo, pero los otros
+   dispositivos siguen mandando sus items y sus notas. Si se aplicaran,
+   volverian a aparecer: el ciclo cerrado revivido, que es justo lo que
+   pasaba con los items viejos. Por eso "arch" se aplica ANTES que nada
+   y los bloques de un curso archivado se descartan al bajar.
 
    Se BAJA ANTES DE SUBIR, siempre. Al reves, un dispositivo pisaria en
    el servidor lo que dejo el otro y despues leeria lo que el mismo
@@ -1915,7 +2717,14 @@ function contenidoDe(clave) {
   if (clave === "items") {
     return { tipo: "ni", items: D.items, bajas: D.bajas || {} };
   }
+  if (clave === "arch") {
+    return { tipo: "na", archivado: D.archivado || {} };
+  }
   const p = clave.split("|");
+  if (p[0] === "arch") {
+    const a = (D.archivo || {})[p[1]];
+    return a ? { tipo: "nar", curso: p[1], datos: a } : null;
+  }
   if (p[0] === "n") {
     const valores = {};
     for (const n of D.notas) if (n.item === p[1]) valores[n.alumno] = n.valor;
@@ -1964,6 +2773,16 @@ function aplicarBloque(c, editado) {
   if (c.tipo === "p") {
     // El padrón es de la app de asistencia: acá se adopta tal cual, así el
     // mismo alumno tiene el mismo id en las dos.
+    //
+    // Antes de pisarlo se anotan los nombres. El padrón reemplaza, no fusiona:
+    // cuando alla se den de baja los cursos del ano pasado, esta libreta es lo
+    // unico que queda para saber de quien era una nota que quedo huerfana.
+    D.nombres = D.nombres || {};
+    for (const x of (c.alumnos || [])) {
+      const cu = (c.cursos || []).find((k) => k.id === x.curso);
+      D.nombres[x.id] = { nombre: x.nombre, curso: x.curso,
+                          etiqueta: cu ? cu.etiqueta : "" };
+    }
     D.cursos = c.cursos.map((x) => ({ id: x.id, etiqueta: x.etiqueta }));
     D.alumnos = c.alumnos.map((x) => ({ id: x.id, nombre: x.nombre, curso: x.curso }));
     return true;
@@ -1976,6 +2795,25 @@ function aplicarBloque(c, editado) {
   }
 
   /* --- propios --- */
+
+  /* El indice de archivado. Gana el movimiento mas nuevo, asi archivar y
+     desarchivar viajan igual que cualquier otra edicion. */
+  if (c.tipo === "na") {
+    D.archivado = D.archivado || {};
+    for (const cid in (c.archivado || {})) {
+      const nuevo = c.archivado[cid], mio = D.archivado[cid];
+      if (!mio || (nuevo.ts || "") > (mio.ts || "")) D.archivado[cid] = nuevo;
+    }
+    return true;
+  }
+  /* El ciclo cerrado de un curso. Llega entero: se reemplaza, no se fusiona.
+     Es una foto, y una foto no se combina con otra. */
+  if (c.tipo === "nar") {
+    D.archivo = D.archivo || {};
+    D.archivo[c.curso] = c.datos;
+    return true;
+  }
+
   if (c.tipo === "ni") {
     for (const id in (c.bajas || {})) {
       if (!D.bajas[id] || c.bajas[id] > D.bajas[id]) D.bajas[id] = c.bajas[id];
@@ -1985,18 +2823,27 @@ function aplicarBloque(c, editado) {
       if (D.bajas[it.id]) continue;
       // formato viejo de id: no vuelve, aunque lo mande otro dispositivo
       if (typeof ID_ITEM_VALIDO !== "undefined" && !ID_ITEM_VALIDO.test(it.id)) continue;
+      if (cursoArchivado(it.curso || cursoDeItemId(it.id))) continue;   // ciclo cerrado
       if (!mios.has(it.id)) D.items.push(it);
     }
-    D.items = D.items.filter((i) => !D.bajas[i.id]);
+    D.items = D.items.filter((i) => !D.bajas[i.id] &&
+      !cursoArchivado(i.curso || cursoDeItemId(i.id)));
     return true;
   }
   if (c.tipo === "nn") {
+    // las notas de un curso archivado ya estan guardadas en su foto: si se
+    // aplicaran, el ciclo cerrado volveria a la vida en cada sincronizacion
+    if (cursoArchivado(cursoDeItemId(c.item))) return false;
     D.notas = D.notas.filter((n) => n.item !== c.item);
     for (const aid in (c.valores || {})) {
       D.notas.push({ alumno: aid, item: c.item, valor: c.valores[aid] });
     }
     return true;
   }
+  /* conducta, cierres, cuatrimestres y valoraciones de un curso ya archivado:
+     todo eso vive ahora dentro de su foto y no vuelve a lo de este ano */
+  if (cursoArchivado(c.curso)) return false;
+
   if (c.tipo === "nc") {
     D.conducta = D.conducta.filter((e) => {
       const al = IDX.alumnoPorId[e.alumno];
@@ -2044,6 +2891,8 @@ function aplicarBloque(c, editado) {
  *  compararlo con lo que tenemos y decidir quién es más nuevo. */
 function claveDe(c) {
   if (c.tipo === "ni") return "items";
+  if (c.tipo === "na") return "arch";
+  if (c.tipo === "nar") return "arch|" + c.curso;
   if (c.tipo === "nn") return "n|" + c.item;
   if (c.tipo === "nc") return "c|" + c.curso + "|" + c.cuatrimestre;
   if (c.tipo === "nq") return "q|" + c.curso + "|" + c.cuatrimestre;
@@ -2084,8 +2933,13 @@ async function sincronizar(subirTodo) {
                     actualizado: f.actualizado });
       } catch (e) { r.ignorados++; }
     }
-    // el padrón primero: las notas necesitan que existan sus alumnos
-    desc.sort((a, b) => (a.c.tipo === "p" ? -1 : 1) - (b.c.tipo === "p" ? -1 : 1));
+    /* El orden importa:
+       1. qué está archivado, para poder descartar lo que sea de un ciclo cerrado
+       2. el padrón, porque las notas necesitan que existan sus alumnos
+       3. las fotos de los ciclos cerrados
+       4. todo lo demás */
+    const orden = (t) => (t === "na" ? 0 : t === "p" ? 1 : t === "nar" ? 2 : 3);
+    desc.sort((a, b) => orden(a.c.tipo) - orden(b.c.tipo));
 
     for (const f of desc) {
       const k = claveDe(f.c);
@@ -2247,6 +3101,7 @@ function refrescarSelects() {
   llenarCursos($("#alCurso"), $("#alCurso").value);
   llenarCursos($("#cuCurso"), $("#cuCurso").value);
   llenarCursos($("#gItemCurso"), $("#gItemCurso").value);
+  llenarSelectsArchivo();
   llenarItems();
   llenarAlumnos();
 }

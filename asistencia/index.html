@@ -260,6 +260,7 @@ td.col-nombre{min-width:150px}
     <button data-v="lista" aria-current="true">Tomar lista</button>
     <button data-v="alumno">Informe alumno</button>
     <button data-v="curso">Informe curso</button>
+    <button data-v="archivo">Archivo</button>
     <button data-v="datos">Datos</button>
   </nav>
 </header>
@@ -334,6 +335,43 @@ td.col-nombre{min-width:150px}
     </div>
   </div>
   <div id="fichaCurso"></div>
+</section>
+
+<!-- ============ ARCHIVO ============ -->
+<section id="v-archivo" class="oculto">
+  <div class="panel no-print">
+    <h2>Cerrar un curso</h2>
+    <p class="nota-pie">Cuando el curso terminó el año, archivalo. Sus jornadas salen de
+      todas las pantallas y el curso deja de aparecer, sin perder nada. Conviene hacerlo
+      primero en la app de notas y después acá.</p>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="arCurso">Curso a archivar</label>
+        <select id="arCurso"></select>
+      </div>
+    </div>
+    <div id="estadoNotasCurso"></div>
+    <div class="acciones">
+      <button class="btn" id="btnArchivar">Archivar este curso</button>
+    </div>
+    <div id="avisoArchivo"></div>
+  </div>
+
+  <div class="panel no-print">
+    <h2>Cursos archivados</h2>
+    <div class="campos">
+      <div class="campo">
+        <label class="et" for="arVer">Ver un ciclo cerrado</label>
+        <select id="arVer"></select>
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn sec" id="btnImprimirArchivo">Imprimir / Guardar PDF</button>
+      <button class="btn sec" id="btnCsvArchivo">Exportar a Excel (CSV)</button>
+      <button class="btn sec" id="btnDesarchivar">Volver a abrirlo</button>
+    </div>
+  </div>
+  <div id="fichaArchivo"></div>
 </section>
 
 <!-- ============ DATOS ============ -->
@@ -491,11 +529,12 @@ const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
 
 /* Sello de esta version, para saber si un dispositivo esta al dia. */
-const VERSION = "02/08 22:54";
+const VERSION = "04/08 19:59";
 
 const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
 const SIGLAS  = ["P", "T", "A", "J"];
 const CLAVE_LS = "asistencia2026";
+const CICLO = 2026;          // el año que se está cursando
 
 /* ---------------- utilidades ---------------- */
 const $ = (s) => document.querySelector(s);
@@ -544,8 +583,45 @@ function desdeSemilla(S) {
   }
   return {
     cursos, alumnos, registros, inferidos, editado: {}, sync: {}, bajas: {},
-    config: { umbral: S.umbral || 75, justificadosDescuentan: 1, racha: 3 },
+    archivado: {},        // qué cursos cerraron su ciclo
+    archivo: {},          // la foto de cada uno, con las jornadas adentro
+    archNotas: {},        // lo que la app de notas dice tener cerrado (solo para avisar)
+    config: { umbral: S.umbral || 75, justificadosDescuentan: 1, racha: 3, ciclo: CICLO },
   };
+}
+
+/* ---------------- ciclos cerrados ----------------
+   Mismo criterio que en la app de notas: archivar un curso lo saca de todo lo
+   vivo sin borrar nada. Acá la foto se lleva las jornadas del año.
+
+   La diferencia con notas es que el padrón es NUESTRO y se fusiona uniendo, así
+   que sacar el curso de la lista no alcanza: el otro dispositivo lo devolvería
+   en la próxima unión. Por eso el archivado viaja como una lápida más adentro
+   del padrón, igual que las bajas. */
+
+function cursoArchivado(cid) {
+  const a = (D && D.archivado || {})[cid];
+  return !!(a && a.activo !== false);
+}
+
+function cursosArchivados() {
+  return Object.keys(D.archivado || {}).filter(cursoArchivado);
+}
+
+function etiquetaArchivada(cid) {
+  const f = (D.archivo || {})[cid];
+  if (f && f.curso && f.curso.etiqueta) return f.curso.etiqueta;
+  const c = (D.cursos || []).find((x) => x.id === cid);
+  return c ? c.etiqueta : cid;
+}
+
+/** Une dos índices de archivado: para cada curso gana el movimiento más nuevo. */
+function unirArchivado(mio, otro) {
+  const r = Object.assign({}, mio || {});
+  for (const cid in (otro || {})) {
+    if (!r[cid] || (otro[cid].ts || "") > (r[cid].ts || "")) r[cid] = otro[cid];
+  }
+  return r;
 }
 
 /* ---------------- desbloqueo de la version publicada ---------------- */
@@ -657,7 +733,10 @@ function cargar() {
         d.sync = d.sync || {};
         limpiarClavesInvalidas(d);
         d.bajas = d.bajas || {};
-        d.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3 }, d.config || {});
+        for (const k of ["archivado", "archivo", "archNotas"]) d[k] = d[k] || {};
+        d.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3,
+                                   ciclo: CICLO }, d.config || {});
+        if (!d.config.ciclo) d.config.ciclo = CICLO;
         return d;
       }
     }
@@ -673,7 +752,8 @@ function cargar() {
  *  publicado jornadas con fecha inexistente. Se limpian al abrir.
  */
 function limpiarClavesInvalidas(d) {
-  const valida = (k) => k === "__padron__" || /^[^|]+\|\d{4}-\d{2}-\d{2}$/.test(k);
+  const valida = (k) => k === "__padron__" || /^arch\|/.test(k) ||
+                        /^[^|]+\|\d{4}-\d{2}-\d{2}$/.test(k);
   let sacadas = 0;
   for (const k of Object.keys(d.editado || {})) {
     if (!valida(k)) { delete d.editado[k]; sacadas++; }
@@ -711,8 +791,13 @@ function marcarGuardado(txt, mal) {
 let IDX = null;
 function reindexar() {
   const porCurso = {}, alumnoPorId = {}, cursoPorId = {};
-  for (const c of D.cursos) { cursoPorId[c.id] = c; porCurso[c.id] = []; }
+  // los cursos de un ciclo cerrado no entran: todas las vistas arrancan de acá
+  for (const c of D.cursos) {
+    if (cursoArchivado(c.id)) continue;
+    cursoPorId[c.id] = c; porCurso[c.id] = [];
+  }
   for (const a of D.alumnos) {
+    if (cursoArchivado(a.curso)) continue;
     alumnoPorId[a.id] = a;
     if (porCurso[a.curso]) porCurso[a.curso].push(a);
   }
@@ -848,13 +933,277 @@ function statsCurso(c) {
   };
 }
 
+/* ---------------- archivar un curso ---------------- */
+
+/** Cierra el ciclo de un curso: las jornadas del año pasan a una foto y salen
+ *  de lo vivo. La foto guarda el detalle y también el resumen ya calculado, para
+ *  que un año cerrado diga siempre lo mismo. */
+function archivarCurso(cid) {
+  const curso = IDX.cursoPorId[cid];
+  if (!curso || cursoArchivado(cid)) return null;
+  const alumnos = IDX.porCurso[cid] || [];
+  const ids = new Set(alumnos.map((a) => a.id));
+  const jornadas = {}, inferidos = {}, resumen = {};
+  let registros = 0;
+
+  for (const a of alumnos) {
+    const s = statsAlumno(a);
+    resumen[a.id] = {
+      presentes: s.presentes, tardes: s.tardes, ausentes: s.ausentes,
+      justificados: s.justificados, conRegistro: s.conRegistro,
+      porcentaje: s.porcentaje, rachaMax: s.rachaMax, alta: s.alta,
+    };
+  }
+  for (const f in D.registros) {
+    for (const aid in D.registros[f]) {
+      if (!ids.has(aid)) continue;
+      (jornadas[f] || (jornadas[f] = {}))[aid] = D.registros[f][aid];
+      registros++;
+      if ((D.inferidos[f] || {})[aid]) (inferidos[f] || (inferidos[f] = [])).push(aid);
+    }
+  }
+
+  D.archivo = D.archivo || {};
+  D.archivo[cid] = {
+    curso: { id: cid, etiqueta: curso.etiqueta, umbral: curso.umbral ?? D.config.umbral },
+    ciclo: D.config.ciclo,
+    fecha: hoyISO(),
+    umbralUsado: curso.umbral ?? D.config.umbral,
+    justificadosDescuentan: D.config.justificadosDescuentan,
+    alumnos: alumnos.map((a) => ({ id: a.id, nombre: a.nombre, alta: a.alta || null,
+                                   activo: a.activo !== false })),
+    jornadas, inferidos, resumen,
+  };
+
+  /* se saca de lo vivo, y las fechas que quedan sin nadie se van enteras */
+  for (const f of Object.keys(D.registros)) {
+    for (const aid of Object.keys(D.registros[f])) {
+      if (ids.has(aid)) delete D.registros[f][aid];
+    }
+    if (!Object.keys(D.registros[f]).length) delete D.registros[f];
+    if (D.inferidos[f]) {
+      for (const aid of Object.keys(D.inferidos[f])) if (ids.has(aid)) delete D.inferidos[f][aid];
+      if (!Object.keys(D.inferidos[f]).length) delete D.inferidos[f];
+    }
+  }
+  /* las jornadas de este curso dejan de existir para esta app */
+  for (const k of Object.keys(D.editado)) {
+    if (k !== CLAVE_PADRON && k.slice(0, k.indexOf("|")) === cid) {
+      delete D.editado[k];
+      if (D.sync && D.sync.enviados) delete D.sync.enviados[k];
+    }
+  }
+
+  D.archivado = D.archivado || {};
+  D.archivado[cid] = { ciclo: D.config.ciclo, fecha: hoyISO(),
+                       ts: new Date().toISOString(), activo: true };
+  D.editado["arch|" + cid] = new Date().toISOString();
+  marcarPadron();      // el archivado viaja adentro del padrón
+  guardar(); reindexar();
+  return { alumnos: alumnos.length, jornadas: Object.keys(jornadas).length, registros };
+}
+
+/** Vuelve a abrir un ciclo cerrado. El padrón es nuestro, así que acá sí se
+ *  pueden devolver los alumnos aunque ya no estén en la lista. */
+function desarchivarCurso(cid) {
+  const f = (D.archivo || {})[cid];
+  if (!f) return { ok: false, motivo: "No hay nada archivado de ese curso." };
+
+  if (!D.cursos.some((c) => c.id === cid)) {
+    D.cursos.push({ id: cid, etiqueta: f.curso.etiqueta, umbral: f.curso.umbral });
+    D.cursos.sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, "es"));
+  }
+  const hay = new Set(D.alumnos.map((a) => a.id));
+  for (const a of f.alumnos) {
+    if (hay.has(a.id)) continue;
+    D.alumnos.push({ id: a.id, nombre: a.nombre, curso: cid, alta: a.alta,
+                     alias: [], activo: a.activo !== false });
+  }
+  for (const fecha in (f.jornadas || {})) {
+    for (const aid in f.jornadas[fecha]) {
+      (D.registros[fecha] || (D.registros[fecha] = {}))[aid] = f.jornadas[fecha][aid];
+    }
+    for (const aid of ((f.inferidos || {})[fecha] || [])) {
+      (D.inferidos[fecha] || (D.inferidos[fecha] = {}))[aid] = 1;
+    }
+    D.editado[claveEdicion(cid, fecha)] = new Date().toISOString();
+  }
+
+  D.archivado[cid] = { ts: new Date().toISOString(), activo: false };
+  delete D.archivo[cid];
+  D.editado["arch|" + cid] = new Date().toISOString();
+  marcarPadron();
+  guardar(); reindexar();
+  return { ok: true, jornadas: Object.keys(f.jornadas || {}).length };
+}
+
+/* ================= VISTA: ARCHIVO ================= */
+
+function llenarSelectsArchivo() {
+  const sa = $("#arCurso"), previo = sa.value;
+  sa.innerHTML = "";
+  for (const c of D.cursos) {
+    if (cursoArchivado(c.id)) continue;
+    sa.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
+  }
+  if (previo && [...sa.options].some((o) => o.value === previo)) sa.value = previo;
+
+  const sv = $("#arVer"), previoV = sv.value;
+  sv.innerHTML = "";
+  for (const cid of cursosArchivados().sort((a, b) =>
+      etiquetaArchivada(a).localeCompare(etiquetaArchivada(b), "es"))) {
+    const f = (D.archivo || {})[cid] || {};
+    sv.appendChild(crear("option", { value: cid,
+      textContent: `${f.ciclo || ""} · ${etiquetaArchivada(cid)}` }));
+  }
+  if (previoV && [...sv.options].some((o) => o.value === previoV)) sv.value = previoV;
+}
+
+/** Qué dice la app de notas sobre el curso elegido. No manda nada: solo avisa,
+ *  porque el orden correcto es cerrar primero allá y después acá. */
+function pintarEstadoNotasCurso() {
+  const cont = $("#estadoNotasCurso");
+  const cid = $("#arCurso").value;
+  if (!cid) { cont.innerHTML = ""; return; }
+  const n = (D.archNotas || {})[cid];
+  const cerradoEnNotas = !!(n && n.activo !== false);
+  cont.innerHTML = cerradoEnNotas
+    ? `<p class="aviso ok">En la app de notas este curso ya está cerrado. Podés archivarlo acá.</p>`
+    : `<p class="aviso alerta"><strong>En la app de notas este curso todavía está abierto.</strong>
+        Si lo archivás acá, allá vas a poder seguir cargando notas igual —son independientes—,
+        pero conviene cerrarlo primero en notas para no dejar el año a medias.</p>`;
+}
+
+function pintarArchivo() {
+  llenarSelectsArchivo();
+  pintarEstadoNotasCurso();
+  const cont = $("#fichaArchivo");
+  const cid = $("#arVer").value;
+  const f = (D.archivo || {})[cid];
+  if (!f) {
+    cont.innerHTML = `<div class="panel"><p class="aviso info">Todavía no archivaste
+      ningún curso. Cuando cierres uno, va a aparecer acá.</p></div>`;
+    return;
+  }
+
+  const fechas = Object.keys(f.jornadas || {}).sort();
+  const alumnos = (f.alumnos || []).slice().sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  const umbral = f.umbralUsado ?? D.config.umbral;
+  const conDatos = alumnos.map((a) => (f.resumen || {})[a.id] || {})
+    .filter((r) => r.porcentaje !== null && r.porcentaje !== undefined);
+  const promedio = conDatos.length
+    ? conDatos.reduce((t, r) => t + r.porcentaje, 0) / conDatos.length : null;
+  const enRiesgo = alumnos.filter((a) => {
+    const r = (f.resumen || {})[a.id] || {};
+    return r.porcentaje !== null && r.porcentaje !== undefined && r.porcentaje < umbral;
+  });
+
+  let h = `<div class="panel">
+    <h2>${esc(etiquetaArchivada(cid))} <small style="font-weight:500">· ciclo ${f.ciclo || ""}</small></h2>
+    <p class="nota-pie">Cerrado el ${f.fecha ? fechaLarga(f.fecha) : "—"}.
+      ${fechas.length} jornadas, del ${fechas.length ? fechaLarga(fechas[0]) : "—"}
+      al ${fechas.length ? fechaLarga(fechas[fechas.length - 1]) : "—"}.
+      Los porcentajes son los que dio el año cuando se cerró, con el umbral de ${umbral}%.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${alumnos.length}</div><div class="e">Alumnos</div></div>
+      <div class="kpi"><div class="v">${fechas.length}</div><div class="e">Jornadas</div></div>
+      <div class="kpi ${promedio !== null && promedio < umbral ? "a" : "p"}">
+        <div class="v">${promedio === null ? "—" : promedio.toFixed(1) + "%"}</div>
+        <div class="e">Promedio</div></div>
+      <div class="kpi ${enRiesgo.length ? "a" : ""}"><div class="v">${enRiesgo.length}</div>
+        <div class="e">Bajo ${umbral}%</div></div>
+    </div>
+    <div class="tabla-wrap"><table>
+      <tr><th>Alumno</th><th class="num">P</th><th class="num">T</th><th class="num">A</th>
+          <th class="num">J</th><th class="num">Clases</th><th class="num">%</th></tr>`;
+  for (const a of alumnos) {
+    const r = (f.resumen || {})[a.id] || {};
+    const bajo = r.porcentaje !== null && r.porcentaje !== undefined && r.porcentaje < umbral;
+    h += `<tr class="${bajo ? "riesgo" : ""}">
+      <td class="col-nombre"><span class="nombre-alumno">${esc(a.nombre)}</span></td>
+      <td class="num">${r.presentes ?? "—"}</td><td class="num">${r.tardes ?? "—"}</td>
+      <td class="num">${r.ausentes ?? "—"}</td><td class="num">${r.justificados ?? "—"}</td>
+      <td class="num">${r.conRegistro ?? "—"}</td>
+      <td class="num"><strong>${r.porcentaje === null || r.porcentaje === undefined
+        ? "—" : r.porcentaje.toFixed(1) + "%"}</strong></td></tr>`;
+  }
+  h += `</table></div></div>`;
+  cont.innerHTML = h;
+}
+
+$("#arCurso").addEventListener("change", pintarEstadoNotasCurso);
+$("#arVer").addEventListener("change", pintarArchivo);
+$("#btnImprimirArchivo").addEventListener("click", () => window.print());
+
+$("#btnArchivar").addEventListener("click", () => {
+  const cid = $("#arCurso").value;
+  const curso = IDX.cursoPorId[cid];
+  if (!curso) { alerta("#avisoArchivo", "Elegí un curso.", "mal"); return; }
+  const alumnos = (IDX.porCurso[cid] || []).length;
+  const jornadas = (IDX.jornadas[cid] || []).length;
+  const n = (D.archNotas || {})[cid];
+  const aviso = (n && n.activo !== false) ? ""
+    : "\n\nOJO: en la app de notas este curso todavía está abierto.";
+  if (!confirm(`¿Archivar "${curso.etiqueta}"?\n\nSus ${jornadas} jornadas y sus ` +
+      `${alumnos} alumnos salen de todas las pantallas. No se pierde nada: queda ` +
+      `en el Archivo y lo podés volver a abrir.` + aviso)) return;
+  const r = archivarCurso(cid);
+  if (!r) { alerta("#avisoArchivo", "No se pudo archivar ese curso.", "mal"); return; }
+  refrescarSelects(); llenarSelectsArchivo();
+  $("#arVer").value = cid;
+  pintarArchivo(); sincronizarDespues();
+  alerta("#avisoArchivo", `Archivado "${curso.etiqueta}": ${r.alumnos} alumnos, ` +
+    `${r.jornadas} jornadas y ${r.registros} registros.`, "ok");
+});
+
+$("#btnDesarchivar").addEventListener("click", () => {
+  const cid = $("#arVer").value;
+  if (!cid) return;
+  if (!confirm(`¿Volver a abrir "${etiquetaArchivada(cid)}"?\n\nVuelve a aparecer en ` +
+    `todas las pantallas, con sus jornadas.`)) return;
+  const r = desarchivarCurso(cid);
+  if (!r.ok) { alerta("#avisoArchivo", r.motivo, "mal"); return; }
+  refrescarSelects(); llenarSelectsArchivo(); pintarArchivo(); sincronizarDespues();
+  alerta("#avisoArchivo", `Abierto de nuevo "${etiquetaArchivada(cid)}": ` +
+    `${r.jornadas} jornadas.`, "ok");
+});
+
+$("#btnCsvArchivo").addEventListener("click", () => {
+  const cid = $("#arVer").value;
+  const f = (D.archivo || {})[cid];
+  if (!f) return;
+  const et = etiquetaArchivada(cid);
+  const fechas = Object.keys(f.jornadas || {}).sort();
+  const filas = [["Ciclo", "Curso", "Alumno", "Fecha", "Estado", "Inferida"]];
+  for (const a of (f.alumnos || [])) {
+    for (const fe of fechas) {
+      const e = f.jornadas[fe][a.id];
+      if (e === undefined) continue;
+      const inf = ((f.inferidos || {})[fe] || []).includes(a.id) ? "si" : "";
+      filas.push([f.ciclo, et, a.nombre, fe, ESTADOS[e], inf]);
+    }
+  }
+  filas.push([]);
+  filas.push(["Ciclo", "Curso", "Alumno", "Presentes", "Tardes", "Ausentes",
+              "Justificados", "Clases", "Porcentaje"]);
+  for (const a of (f.alumnos || [])) {
+    const r = (f.resumen || {})[a.id] || {};
+    filas.push([f.ciclo, et, a.nombre, r.presentes, r.tardes, r.ausentes,
+                r.justificados, r.conRegistro,
+                r.porcentaje === null || r.porcentaje === undefined
+                  ? "" : r.porcentaje.toFixed(1)]);
+  }
+  bajar(`archivo_asistencia_${f.ciclo || ""}_${et.replace(/[^A-Za-z0-9]+/g, "_")}.csv`, csv(filas));
+});
+
 /* ---------------- navegación ---------------- */
-const VISTAS = ["lista", "alumno", "curso", "datos"];
+const VISTAS = ["lista", "alumno", "curso", "archivo", "datos"];
 function mostrar(v) {
   for (const x of VISTAS) $("#v-" + x).classList.toggle("oculto", x !== v);
   for (const b of $("#nav").children) b.setAttribute("aria-current", String(b.dataset.v === v));
   if (v === "alumno") pintarAlumno();
   if (v === "curso") pintarCurso();
+  if (v === "archivo") pintarArchivo();
   if (v === "datos") pintarDatos();
 }
 $("#nav").addEventListener("click", (ev) => {
@@ -864,11 +1213,12 @@ $("#nav").addEventListener("click", (ev) => {
 
 /* ---------------- selects ---------------- */
 function llenarSelectCursos(sel, valor) {
+  const cursos = D.cursos.filter((c) => !cursoArchivado(c.id));
   sel.innerHTML = "";
-  for (const c of D.cursos) {
+  for (const c of cursos) {
     sel.appendChild(crear("option", { value: c.id, textContent: c.etiqueta }));
   }
-  if (valor && D.cursos.some((c) => c.id === valor)) sel.value = valor;
+  if (valor && cursos.some((c) => c.id === valor)) sel.value = valor;
 }
 
 /* ================= VISTA: TOMAR LISTA ================= */
@@ -1335,6 +1685,11 @@ function pintarDatos() {
     <tr><td>Rango de fechas</td><td class="num">${fechas.length
       ? fechaLarga(fechas[0]) + " a " + fechaLarga(fechas[fechas.length - 1]) : "—"}</td></tr>
     <tr><td>Bajas registradas</td><td class="num">${Object.keys(D.bajas || {}).length}</td></tr>
+    <tr><td>Cursos archivados</td><td class="num">${cursosArchivados().length}</td></tr>
+    <tr><td>Registros guardados en el archivo</td><td class="num">${
+      Object.values(D.archivo || {}).reduce((t, f) => t +
+        Object.values(f.jornadas || {}).reduce((s, j) => s + Object.keys(j).length, 0), 0)}</td></tr>
+    <tr><td>Ciclo en curso</td><td class="num"><strong>${D.config.ciclo}</strong></td></tr>
   </table></div>
   <p class="nota-pie">Si un dispositivo muestra una versión distinta de los otros,
     está desactualizado: tocá el botón de abajo en ese dispositivo.</p>
@@ -1627,17 +1982,22 @@ function contenidoJornada(cursoId, fecha) {
 
 /** Resumen estable del padrón, sin depender del orden, para poder comparar
  *  el resultado de una unión contra lo que mandó el otro dispositivo. */
-function huellaPadron(cursos, alumnos, config, bajas) {
+function huellaPadron(cursos, alumnos, config, bajas, archivado) {
   cursos = cursos || D.cursos;
   alumnos = alumnos || D.alumnos;
   config = config || D.config;
   bajas = bajas || D.bajas || {};
+  archivado = archivado || D.archivado || {};
   return JSON.stringify([
     cursos.map((c) => [c.id, c.etiqueta, c.umbral ?? null].join("|")).sort(),
     alumnos.map((a) => [a.id, a.nombre, a.curso, a.alta || "",
                         a.activo === false ? 0 : 1].join("|")).sort(),
     [config.umbral, config.justificadosDescuentan, config.racha].join("|"),
     Object.keys(bajas).sort(),
+    // el archivado entra en la huella: si no, cerrar un ciclo no se notaría como
+    // diferencia y el dispositivo no publicaría la novedad
+    Object.keys(archivado).sort()
+      .map((k) => k + ":" + (archivado[k].activo === false ? 0 : 1)),
   ]);
 }
 
@@ -1648,7 +2008,14 @@ function contenidoPadron() {
     alumnos: D.alumnos,
     config: D.config,
     bajas: D.bajas || {},
+    archivado: D.archivado || {},
   };
+}
+
+/** La foto de un ciclo cerrado, que viaja en su propio bloque. */
+function contenidoArchivo(cid) {
+  const a = (D.archivo || {})[cid];
+  return a ? { tipo: "aa", curso: cid, datos: a } : null;
 }
 
 async function llamarNube(funcion, cuerpo) {
@@ -1671,6 +2038,8 @@ async function llamarNube(funcion, cuerpo) {
 
 /** Aplica un bloque de jornada que vino del servidor. */
 function aplicarJornadaNube(c, editado) {
+  // un ciclo cerrado no vuelve: sus jornadas ya están guardadas en la foto
+  if (cursoArchivado(c.curso)) return false;
   const alumnos = IDX.porCurso[c.curso] || [];
   if (!alumnos.length && !D.cursos.some((x) => x.id === c.curso)) return false;
   for (const a of alumnos) {
@@ -1720,6 +2089,23 @@ async function sincronizar(subirTodo) {
       // El servidor lo comparten las dos apps. Los bloques que no son de acá
       // —los de notas, conducta y calificaciones— se ignoran sin tocarlos: son
       // de la app de notas y esta no tiene nada que hacer con ellos.
+      //
+      // Con una excepción que no toca nada: "na" es el índice de lo que la app
+      // de notas tiene cerrado. Se anota para poder avisar en pantalla cuándo es
+      // seguro archivar acá, pero no cambia ni un dato de esta app.
+      if (c.tipo === "na") {
+        D.archNotas = unirArchivado(D.archNotas, c.archivado);
+        r.ignorados++; continue;
+      }
+      if (c.tipo === "aa") {              // foto de un ciclo cerrado, propia
+        D.archivo = D.archivo || {};
+        D.archivo[c.curso] = c.datos;
+        D.editado["arch|" + c.curso] = f.editado;
+        (D.sync.enviados || (D.sync.enviados = {}))["arch|" + c.curso] = f.editado;
+        r.aplicados++;
+        if (!D.sync.cursor || f.actualizado > D.sync.cursor) D.sync.cursor = f.actualizado;
+        continue;
+      }
       if (c.tipo !== "p" && c.tipo !== "j") { r.ignorados++; continue; }
       if (c.tipo === "p") {
         // El padrón NUNCA se descarta por ser más viejo, y esto es la clave del
@@ -1728,8 +2114,13 @@ async function sincronizar(subirTodo) {
         // alumno borrado revivía. Altas y bajas solo se suman; las bajas mandan
         // sobre las altas. Así los tres dispositivos llegan al mismo resultado,
         // sin importar en qué orden sincronicen.
+        // El archivado se une como las bajas, pero la huella remota se calcula
+        // con el del otro TAL COMO VINO: si acá se cerró un ciclo que él todavía
+        // no tiene, las huellas tienen que dar distinto para que se lo mandemos.
+        // (Con la unión darían iguales y el cierre no viajaría nunca.)
         const huellaRemota = huellaPadron(c.cursos, c.alumnos, c.config || D.config,
-          Object.assign({}, D.bajas, c.bajas || {}));
+          Object.assign({}, D.bajas, c.bajas || {}), c.archivado || {});
+        D.archivado = unirArchivado(D.archivado, c.archivado);
         // la configuración sí es "gana el más nuevo": no tiene sentido unirla
         if (c.config && f.editado > (D.editado[CLAVE_PADRON] || "")) {
           D.config = Object.assign({}, D.config, c.config);
@@ -1769,6 +2160,11 @@ async function sincronizar(subirTodo) {
       if (k === CLAVE_PADRON) continue;
       if (enviados[k] === D.editado[k]) continue;
       const corte = k.indexOf("|");
+      if (k.slice(0, corte) === "arch") {          // la foto de un ciclo cerrado
+        const contenido = contenidoArchivo(k.slice(corte + 1));
+        if (contenido) pendientes.push({ clave: k, editado: D.editado[k], contenido });
+        continue;
+      }
       pendientes.push({
         clave: k, editado: D.editado[k],
         contenido: contenidoJornada(k.slice(0, corte), k.slice(corte + 1)),
@@ -1984,7 +2380,9 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
       D.editado = D.editado || {};
       D.bajas = D.bajas || {};
       D.sync = D.sync || {};
-      D.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3 }, D.config || {});
+      for (const k of ["archivado", "archivo", "archNotas"]) D[k] = D[k] || {};
+      D.config = Object.assign({ umbral: 75, justificadosDescuentan: 1, racha: 3,
+                                 ciclo: CICLO }, D.config || {});
       guardar(); reindexar(); refrescarSelects(); cargarBorrador(); pintarDatos();
       alerta("#avisoDatos", "Copia restaurada.", "ok");
     } catch (e) {
@@ -2033,6 +2431,13 @@ function combinar(R) {
   D.bajas = D.bajas || {};
   for (const id in (R.bajas || {})) {
     if (!D.bajas[id] || R.bajas[id] > D.bajas[id]) D.bajas[id] = R.bajas[id];
+  }
+
+  /* --- ciclos cerrados: para cada curso gana el movimiento más nuevo --- */
+  if (R.archivado) D.archivado = unirArchivado(D.archivado, R.archivado);
+  if (R.archivo) {
+    D.archivo = D.archivo || {};
+    for (const cid in R.archivo) if (!D.archivo[cid]) D.archivo[cid] = R.archivo[cid];
   }
 
   /* --- alumnos: se unen por curso + nombre --- */
@@ -2188,6 +2593,7 @@ function refrescarSelects() {
   llenarSelectCursos($("#selCursoRep"), c3);
   llenarSelectCursos($("#nuevoAlumnoCurso"), $("#nuevoAlumnoCurso").value);
   llenarSelectCursos($("#gestCurso"), $("#gestCurso").value);
+  llenarSelectsArchivo();
   llenarSelectAlumnos();
 }
 
