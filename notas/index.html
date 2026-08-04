@@ -276,6 +276,33 @@ td.col-nombre{min-width:150px}
 .final .calculado{font-size:.88rem;color:var(--suave)}
 .marca-mano{display:inline-block;background:var(--t-bg);color:#92400e;border-radius:999px;
   padding:3px 10px;font-size:.74rem;font-weight:700}
+
+/* ---------- valoración de trayectoria (TEA/TEP/TED) ---------- */
+.val-fila{display:flex;align-items:center;gap:10px;padding:11px 0;
+  border-bottom:1px solid var(--borde);flex-wrap:wrap}
+.val-fila:last-child{border-bottom:0}
+.val-fila .quien{flex:1 1 150px;min-width:0;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.val-fila .quien small{display:block;font-weight:500;color:var(--suave);font-size:.75rem}
+.val-btns{display:flex;gap:6px;flex-shrink:0}
+.val-btns button{min-width:60px;height:48px;border-radius:11px;background:#f1f5f9;
+  color:#475569;font-weight:800;font-size:.95rem}
+.val-btns button[aria-pressed="true"].tea{background:var(--p-bg);color:#065f46;
+  box-shadow:inset 0 0 0 2px var(--p)}
+.val-btns button[aria-pressed="true"].tep{background:var(--t-bg);color:#92400e;
+  box-shadow:inset 0 0 0 2px var(--t)}
+.val-btns button[aria-pressed="true"].ted{background:var(--a-bg);color:#991b1b;
+  box-shadow:inset 0 0 0 2px var(--a)}
+.val-obs{flex:1 1 100%;min-height:42px}
+/* en pantalla ancha entra en el mismo renglón, después del nombre; en el
+   celular sigue cayendo abajo, que es donde se puede escribir cómodo */
+@media (min-width:700px){
+  .val-obs{flex:1 1 200px;order:2}
+  .val-btns{order:3}
+}
+/* variantes de la .pill del CSS compartido: solo el color, la forma es la de allá */
+.pill.tea{background:var(--p-bg);color:#065f46;font-weight:800}
+.pill.tep{background:var(--t-bg);color:#92400e;font-weight:800}
+.pill.ted{background:var(--a-bg);color:#991b1b;font-weight:800}
 </style>
 </head>
 <body>
@@ -317,7 +344,7 @@ td.col-nombre{min-width:150px}
         <select id="selCurso"></select>
       </div>
       <div class="campo">
-        <label class="et" for="selItem">Trabajo, evaluación o nota de cierre</label>
+        <label class="et" for="selItem">Trabajo, nota de cierre o informe de valoración</label>
         <select id="selItem"></select>
       </div>
     </div>
@@ -463,7 +490,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "02/08 23:14";
+const VERSION = "03/08 22:47";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -499,6 +526,7 @@ function desdeSemilla(S) {
     conducta: JSON.parse(JSON.stringify(S.conducta || [])),
     manual: JSON.parse(JSON.stringify(S.manual || [])),
     finales: JSON.parse(JSON.stringify(S.finales || [])),
+    valoraciones: JSON.parse(JSON.stringify(S.valoraciones || [])),
     asistencia: {},          // se llena desde la nube, solo para la ficha combinada
     editado: {}, sync: {}, bajas: {},
     config: Object.assign({ escalaMin: 1, escalaMax: 10, conductaInicial: 10,
@@ -513,7 +541,7 @@ function cargar() {
       const d = JSON.parse(crudo);
       if (d && d.alumnos && d.items) {
         for (const k of ["asistencia", "editado", "sync", "bajas"]) d[k] = d[k] || {};
-        for (const k of ["notas", "conducta", "manual", "finales"]) d[k] = d[k] || [];
+        for (const k of ["notas", "conducta", "manual", "finales", "valoraciones"]) d[k] = d[k] || [];
         barrerItemsViejos(d);
         return d;
       }
@@ -586,7 +614,10 @@ function reindexar() {
   for (const m of D.manual) manual[m.alumno + "|" + m.cuatrimestre] = m.valor;
   const final = {};
   for (const f of D.finales) final[f.alumno] = f;
-  IDX = { porCurso, alumnoPorId, cursoPorId, itemsPorCurso, itemPorId, nota, manual, final };
+  const valoracion = {};
+  for (const v of (D.valoraciones || [])) valoracion[v.alumno + "|" + v.informe] = v;
+  IDX = { porCurso, alumnoPorId, cursoPorId, itemsPorCurso, itemPorId, nota, manual,
+          final, valoracion };
 }
 
 /* ---------------- cálculo ---------------- */
@@ -685,6 +716,39 @@ function guardarCierre(alumnoId, campo, valor) {
   if (Object.keys(g).length === 1) D.finales = D.finales.filter((x) => x !== g);
   const al = IDX.alumnoPorId[alumnoId];
   marcarEdicion("f|" + al.curso);
+}
+
+/* ---------------- valoración de la trayectoria ----------------
+   TEA / TEP / TED no son notas: no se promedian, no entran en ningún cálculo
+   y no las decide el sistema. Son dos informes al año, a mitad de cada
+   cuatrimestre, y la letra la escribe siempre el docente. */
+const VALORACIONES = [
+  { v: "TEA", desc: "Trayectoria educativa avanzada",     clase: "tea" },
+  { v: "TEP", desc: "Trayectoria educativa en proceso",   clase: "tep" },
+  { v: "TED", desc: "Trayectoria educativa discontinua",  clase: "ted" },
+];
+const VAL_CLASE = { TEA: "tea", TEP: "tep", TED: "ted" };
+const INFORMES = {
+  1: { et: "INFORME 1", detalle: "mitad del 1er cuatrimestre", cuat: 1 },
+  2: { et: "INFORME 2", detalle: "mitad del 2do cuatrimestre", cuat: 2 },
+};
+
+function valoracionDe(alumnoId, informe) {
+  const v = IDX.valoracion[alumnoId + "|" + informe];
+  return { valor: (v && v.valor) || null, obs: (v && v.obs) || "" };
+}
+
+/** Guarda (o borra) la valoración de un alumno. Sin letra no hay valoración:
+ *  la fila se saca entera, aunque haya quedado una observación escrita. */
+function guardarValoracion(alumnoId, informe, valor, obs) {
+  D.valoraciones = (D.valoraciones || []).filter(
+    (x) => !(x.alumno === alumnoId && +x.informe === +informe));
+  if (valor) {
+    D.valoraciones.push({ alumno: alumnoId, informe: +informe, valor,
+                          obs: (obs || "").trim() });
+  }
+  const al = IDX.alumnoPorId[alumnoId];
+  if (al) marcarEdicion("v|" + al.curso + "|" + informe);
 }
 
 /* ---------------- navegación ---------------- */
@@ -788,7 +852,23 @@ function llenarItems() {
       textContent: c.et + (ya ? `  (${ya} escritas)` : "  — sin escribir") }));
   }
   sel.appendChild(g);
+
+  const gv = crear("optgroup");
+  gv.label = "Informe de valoración (TEA/TEP/TED)";
+  for (const n of [1, 2]) {
+    const ya = (IDX.porCurso[cid] || []).filter((a) => valoracionDe(a.id, n).valor).length;
+    gv.appendChild(crear("option", { value: "__v" + n,
+      textContent: `${INFORMES[n].et} — ${INFORMES[n].detalle}` +
+        (ya ? `  (${ya} cargadas)` : "  — sin cargar") }));
+  }
+  sel.appendChild(gv);
   if (previo && [...sel.options].some((o) => o.value === previo)) sel.value = previo;
+}
+
+/** El informe de valoración elegido en el desplegable, o 0 si no es uno. */
+function informeElegido(clave) {
+  const m = /^__v([12])$/.exec(clave || "");
+  return m ? +m[1] : 0;
 }
 
 function pintarCargar() {
@@ -800,6 +880,9 @@ function pintarCargar() {
   cont.innerHTML = "";
   $("#avisoCargar").innerHTML = "";
 
+  if (informeElegido(elegido)) {
+    pintarCargarValoracion(cid, informeElegido(elegido), alumnos, cont); return;
+  }
   if (CIERRES[elegido]) { pintarCargarCierre(cid, elegido, alumnos, cont); return; }
 
   if (!D.items.length && !alumnos.length) {
@@ -934,9 +1017,93 @@ function guardarCierreDelCurso(cid, clave) {
   alerta("#avisoCargar", `Guardado ${c.et.toLowerCase()}: ${puestas} de ${alumnos.length} alumnos.`, "ok");
 }
 
+/** La carga del informe de valoración: tres botones por alumno y un renglón
+ *  de observación. Al lado del nombre van los tres datos que sirven para
+ *  decidir —promedio, trabajos que debe y asistencia—, pero la app no propone
+ *  ninguna letra: la elegís vos. */
+function pintarCargarValoracion(cid, informe, alumnos, cont) {
+  const inf = INFORMES[informe];
+  if (!alumnos.length) {
+    cont.innerHTML = `<p class="aviso info">Este curso no tiene alumnos.</p>`;
+    $("#resumenCargar").innerHTML = "";
+    return;
+  }
+
+  cont.innerHTML = `<p class="aviso info"><strong>${inf.et} · ${inf.detalle}.</strong>
+    Elegís una de las tres para cada alumno. <strong>No es una nota:</strong> no se
+    promedia con nada ni toca la nota del cuatrimestre. Los datos que están abajo de
+    cada nombre son para mirar mientras decidís — el sistema no sugiere ninguna letra.
+    Tocando de nuevo la que está marcada, se borra.</p>
+    <p class="nota-pie">${VALORACIONES.map((x) => `<strong>${x.v}</strong> ${x.desc}`).join(" · ")}</p>`;
+
+  borrador = {};
+  for (const a of alumnos) {
+    const actual = valoracionDe(a.id, informe);
+    borrador[a.id] = { valor: actual.valor, obs: actual.obs };
+
+    const nc = notaCuatrimestre(a.id, inf.cuat);
+    const faltan = faltantesDe(a.id, inf.cuat).length;
+    const asis = asistenciaDe(a.id);
+    const ref = [
+      nc.promedio === null ? "sin notas todavía" : `promedio ${nc.promedio.toFixed(2)}`,
+      faltan ? `le faltan ${faltan}` : null,
+      asis ? `asistencia ${asis.pct.toFixed(0)}%` : null,
+    ].filter(Boolean).join("  ·  ");
+
+    const fila = crear("div", { className: "val-fila" });
+    fila.innerHTML = `<div class="quien">${esc(a.nombre)}<small>${ref}</small></div>
+      <div class="val-btns">${VALORACIONES.map((x) =>
+        `<button type="button" class="${x.clase}" data-a="${a.id}" data-v="${x.v}"
+           aria-pressed="${actual.valor === x.v}" title="${x.desc}">${x.v}</button>`).join("")}</div>
+      <input type="text" class="val-obs" maxlength="180" data-obs="${a.id}"
+        placeholder="Observación (opcional)" value="${esc(actual.obs)}">`;
+    cont.appendChild(fila);
+  }
+  pintarResumenCargar();
+}
+
+/** Guarda todo el informe de un curso de una vez. */
+function guardarValoracionesDelCurso(cid, informe) {
+  const alumnos = IDX.porCurso[cid] || [];
+  const ids = new Set(alumnos.map((a) => a.id));
+  const propias = () => (D.valoraciones || [])
+    .filter((x) => ids.has(x.alumno) && +x.informe === +informe)
+    .map((x) => x.alumno + ":" + x.valor + ":" + (x.obs || "")).sort().join("|");
+
+  const antes = propias();
+  D.valoraciones = (D.valoraciones || [])
+    .filter((x) => !(ids.has(x.alumno) && +x.informe === +informe));
+  let puestas = 0;
+  for (const a of alumnos) {
+    const b = borrador[a.id] || {};
+    if (!b.valor) continue;   // sin letra no se guarda, aunque haya observación
+    D.valoraciones.push({ alumno: a.id, informe: +informe, valor: b.valor,
+                          obs: (b.obs || "").trim() });
+    puestas++;
+  }
+  // solo se marca para sincronizar si algo cambió de verdad: si no, cada
+  // "Guardar" mandaría al servidor un bloque idéntico al que ya está
+  if (antes !== propias()) marcarEdicion("v|" + cid + "|" + informe);
+
+  guardar(); reindexar(); llenarItems(); pintarCargar(); sincronizarDespues();
+  alerta("#avisoCargar", `Guardado ${INFORMES[informe].et}: ${puestas} de ${alumnos.length} alumnos.`, "ok");
+}
+
 function pintarResumenCargar() {
   const elegido = $("#selItem").value;
   const it = IDX.itemPorId[elegido];
+  const informe = informeElegido(elegido);
+  if (informe) {
+    const total = (IDX.porCurso[$("#selCurso").value] || []).length;
+    const cuenta = { TEA: 0, TEP: 0, TED: 0 };
+    for (const b of Object.values(borrador)) if (b && b.valor) cuenta[b.valor]++;
+    const puestas = cuenta.TEA + cuenta.TEP + cuenta.TED;
+    $("#resumenCargar").innerHTML =
+      VALORACIONES.map((x) => `<span class="chip ${x.clase === "tea" ? "p"
+        : x.clase === "tep" ? "t" : "a"}">${cuenta[x.v]} ${x.v}</span>`).join("") +
+      `<span class="chip ${total - puestas ? "j" : "n"}">${total - puestas} sin cargar</span>`;
+    return;
+  }
   if (!it && !CIERRES[elegido]) return;
   const vals = Object.values(borrador).filter((v) => v !== "" && v !== null).map(Number);
   const prom = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
@@ -949,7 +1116,28 @@ function pintarResumenCargar() {
     (prom !== null ? `<span class="chip j">promedio ${prom.toFixed(2)}</span>` : "");
 }
 
+/* los tres botones de valoración: uno solo queda marcado, y el que ya estaba
+   marcado se apaga si lo tocás de nuevo */
+$("#listaNotas").addEventListener("click", (ev) => {
+  const b = ev.target.closest(".val-btns button[data-v]");
+  if (!b) return;
+  const aid = b.dataset.a;
+  const previo = (borrador[aid] || {}).valor || null;
+  const nuevo = previo === b.dataset.v ? null : b.dataset.v;
+  borrador[aid] = Object.assign({}, borrador[aid], { valor: nuevo });
+  for (const otro of b.parentElement.querySelectorAll("button[data-v]")) {
+    otro.setAttribute("aria-pressed", String(otro.dataset.v === nuevo));
+  }
+  pintarResumenCargar();
+});
+
 $("#listaNotas").addEventListener("input", (ev) => {
+  const obs = ev.target.closest("input.val-obs");
+  if (obs) {
+    const aid = obs.dataset.obs;
+    borrador[aid] = Object.assign({}, borrador[aid], { obs: obs.value });
+    return;
+  }
   const inp = ev.target.closest("input.nota");
   if (!inp) return;
   let v = inp.value.trim();
@@ -966,6 +1154,9 @@ $("#listaNotas").addEventListener("input", (ev) => {
 
 $("#btnGuardarNotas").addEventListener("click", () => {
   const elegido = $("#selItem").value;
+  if (informeElegido(elegido)) {
+    guardarValoracionesDelCurso($("#selCurso").value, informeElegido(elegido)); return;
+  }
   if (CIERRES[elegido]) { guardarCierreDelCurso($("#selCurso").value, elegido); return; }
   const it = IDX.itemPorId[elegido];
   if (!it || it.tipo === "conducta") return;
@@ -1153,6 +1344,28 @@ function pintarAlumno() {
       <div class="kpi a"><div class="v">${asis.ausentes}</div><div class="e">Faltó</div></div>
       <div class="kpi t"><div class="v">${asis.tardes}</div><div class="e">Tarde</div></div>
     </div>`;
+  }
+
+  /* valoración de la trayectoria: va también en la impresión sin notas, porque
+     no es una nota y es justamente el contenido del informe */
+  {
+    const hayAlguna = valoracionDe(al.id, 1).valor || valoracionDe(al.id, 2).valor;
+    if (hayAlguna || !imprimirSinNotas) {
+      h += `<div class="recuadro"><h3>Valoración de la trayectoria</h3>
+        <div class="tabla-wrap"><table>`;
+      for (const n of [1, 2]) {
+        const v = valoracionDe(al.id, n);
+        h += `<tr><td>${INFORMES[n].et}
+            <small style="color:var(--suave)">(${INFORMES[n].detalle})</small>${
+            v.obs ? `<br><small>${esc(v.obs)}</small>` : ""}</td>
+          <td class="num">${v.valor
+            ? `<span class="pill ${VAL_CLASE[v.valor]}">${v.valor}</span>`
+            : `<span class="pill">sin cargar</span>`}</td></tr>`;
+      }
+      h += `</table></div>
+        <p class="nota-pie">${VALORACIONES.map((x) => `<strong>${x.v}</strong> ${x.desc}`).join(" · ")}.
+          No es una nota: no entra en ningún promedio.</p></div>`;
+    }
   }
 
   if (!imprimirSinNotas) {
@@ -1373,6 +1586,43 @@ function pintarCurso() {
       definidos en este cuatrimestre que todavía no tienen ninguna nota: aparecen en
       Cargar notas, no acá.` : ""}</p></div>`;
 
+  /* valoración de la trayectoria del cuatrimestre elegido */
+  {
+    const informe = cuat;   // informe 1 ↔ 1er cuatrimestre, informe 2 ↔ 2do
+    const cuenta = { TEA: [], TEP: [], TED: [] };
+    const sin = [];
+    for (const a of alumnos) {
+      const v = valoracionDe(a.id, informe);
+      if (v.valor && cuenta[v.valor]) cuenta[v.valor].push({ a, v }); else sin.push(a);
+    }
+    h += `<div class="panel"><h2>${INFORMES[informe].et} — valoración de la trayectoria</h2>
+      <div class="kpis">
+        <div class="kpi p"><div class="v">${cuenta.TEA.length}</div><div class="e">TEA</div></div>
+        <div class="kpi t"><div class="v">${cuenta.TEP.length}</div><div class="e">TEP</div></div>
+        <div class="kpi a"><div class="v">${cuenta.TED.length}</div><div class="e">TED</div></div>
+        <div class="kpi"><div class="v">${sin.length}</div><div class="e">Sin cargar</div></div>
+      </div>`;
+    const seguimiento = cuenta.TED.concat(cuenta.TEP);
+    if (!cuenta.TEA.length && !seguimiento.length) {
+      h += `<p class="aviso info">Todavía no cargaste el ${INFORMES[informe].et.toLowerCase()}
+        de este curso. Se carga desde <strong>Cargar notas</strong>.</p>`;
+    } else if (seguimiento.length) {
+      h += `<div class="tabla-wrap"><table>
+        <tr><th>Alumno</th><th class="num">Valoración</th><th>Observación</th></tr>`;
+      for (const x of seguimiento) {
+        h += `<tr class="${x.v.valor === "TED" ? "riesgo" : ""}">
+          <td class="col-nombre"><span class="nombre-alumno">${esc(x.a.nombre)}</span></td>
+          <td class="num"><span class="pill ${VAL_CLASE[x.v.valor]}">${x.v.valor}</span></td>
+          <td>${esc(x.v.obs || "")}</td></tr>`;
+      }
+      h += `</table></div><p class="nota-pie">Salen primero los TED y después los TEP: son los
+        que necesitan seguimiento. Los ${cuenta.TEA.length} en TEA no se listan.</p>`;
+    } else {
+      h += `<p class="aviso ok">Los ${cuenta.TEA.length} alumnos valorados están en TEA.</p>`;
+    }
+    h += `</div>`;
+  }
+
   /* quién debe trabajos */
   const deudores = [];
   for (const a of alumnos) {
@@ -1415,6 +1665,7 @@ function pintarDatos() {
     <tr><td>Episodios de conducta</td><td class="num">${D.conducta.length}</td></tr>
     <tr><td>Notas puestas a mano</td><td class="num">${D.manual.length}</td></tr>
     <tr><td>Cierres de año cargados</td><td class="num">${D.finales.length}</td></tr>
+    <tr><td>Valoraciones TEA/TEP/TED</td><td class="num">${(D.valoraciones || []).length}</td></tr>
     <tr><td>Jornadas de asistencia leídas</td><td class="num">${Object.keys(D.asistencia || {}).length}</td></tr>
   </table></div>`;
 }
@@ -1510,6 +1761,12 @@ $("#btnCsv").addEventListener("click", () => {
                              ["FEBRERO", ci.febrero]]) {
         if (v !== null) filas.push([c.etiqueta, a.nombre, "", et, "cargada a mano", v]);
       }
+      for (const n of [1, 2]) {
+        const v = valoracionDe(a.id, n);
+        if (!v.valor) continue;
+        filas.push([c.etiqueta, a.nombre, n, INFORMES[n].et + " (TEA/TEP/TED)",
+                    v.obs || "valoración", v.valor]);
+      }
     }
   }
   bajar(`notas_${hoyISO().replace(/-/g, "")}.csv`, csv(filas));
@@ -1532,7 +1789,7 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
       if (!confirm("Esto reemplaza todo lo que hay en este dispositivo. ¿Seguir?")) return;
       D = d;
       for (const k of ["asistencia", "editado", "sync", "bajas"]) D[k] = D[k] || {};
-      for (const k of ["notas", "conducta", "manual", "finales"]) D[k] = D[k] || [];
+      for (const k of ["notas", "conducta", "manual", "finales", "valoraciones"]) D[k] = D[k] || [];
       guardar(); reindexar(); refrescarSelects(); pintarDatos();
       alerta("#avisoDatos", "Copia restaurada.", "ok");
     } catch (e) { alerta("#avisoDatos", "Ese archivo no es una copia válida.", "mal"); }
@@ -1554,6 +1811,7 @@ $("#fileRestaurar").addEventListener("change", (ev) => {
      c|<curso>|<c>  los episodios de conducta de un curso y cuatrimestre
      q|<curso>|<c>  las notas de cuatrimestre puestas a mano
      f|<curso>      el cierre del ano: nota final, diciembre y febrero
+     v|<curso>|<i>  las valoraciones TEA/TEP/TED del informe <i> (1 o 2)
 
    Lo que esta app LEE pero no toca: el padron y las jornadas, que son
    de la app de asistencia. Por eso el mismo alumno es uno solo en las
@@ -1644,6 +1902,16 @@ function contenidoDe(clave) {
     }
     return { tipo: "nq", curso: p[1], cuatrimestre: +p[2], manual: m };
   }
+  if (p[0] === "v") {
+    const v = {};
+    for (const x of (D.valoraciones || [])) {
+      const al = IDX.alumnoPorId[x.alumno];
+      if (al && al.curso === p[1] && +x.informe === +p[2]) {
+        v[x.alumno] = { valor: x.valor, obs: x.obs || "" };
+      }
+    }
+    return { tipo: "nv", curso: p[1], informe: +p[2], valoraciones: v };
+  }
   return null;
 }
 
@@ -1715,6 +1983,18 @@ function aplicarBloque(c, editado) {
     }
     return true;
   }
+  if (c.tipo === "nv") {
+    D.valoraciones = (D.valoraciones || []).filter((x) => {
+      const al = IDX.alumnoPorId[x.alumno];
+      return !(al && al.curso === c.curso && +x.informe === +c.informe);
+    });
+    for (const aid in (c.valoraciones || {})) {
+      const x = c.valoraciones[aid] || {};
+      if (!x.valor) continue;   // sin letra no es una valoración: no ocupa lugar
+      D.valoraciones.push({ alumno: aid, informe: +c.informe, valor: x.valor, obs: x.obs || "" });
+    }
+    return true;
+  }
   return false;
 }
 
@@ -1726,6 +2006,7 @@ function claveDe(c) {
   if (c.tipo === "nc") return "c|" + c.curso + "|" + c.cuatrimestre;
   if (c.tipo === "nq") return "q|" + c.curso + "|" + c.cuatrimestre;
   if (c.tipo === "nf") return "f|" + c.curso;
+  if (c.tipo === "nv") return "v|" + c.curso + "|" + c.informe;
   return null;   // padrón y jornadas: son de la otra app, siempre se aplican
 }
 
