@@ -377,7 +377,8 @@ td.col-nombre{min-width:150px}
     <p class="nota-pie">Copiá el rango en Excel y pegalo acá con Ctrl+V, o elegí un
       archivo CSV. La primera fila tienen que ser los títulos de las columnas y la
       primera columna, los alumnos. Antes de guardar nada te muestro qué entendí.</p>
-    <textarea id="txtImportar" rows="6" placeholder="Alumno	TP1	TP2	CARPETA 1&#10;ALVARADO UMA	7	8	7&#10;ALVAREZ LUCIA	8	9	8"></textarea>
+    <!-- el ejemplo va con nombres inventados: esta página se publica -->
+    <textarea id="txtImportar" rows="6" placeholder="Alumno	TP1	TP2	CARPETA 1&#10;EJEMPLO, Alumna Primera	7	8	7&#10;EJEMPLO, Alumno Segundo	8	9	8"></textarea>
     <div class="acciones">
       <button class="btn sec" id="btnArchivoImportar">Elegir un archivo CSV</button>
       <input type="file" id="fileImportar" accept=".csv,.txt,.tsv,text/csv,text/plain" class="oculto">
@@ -557,7 +558,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "04/08 19:59";
+const VERSION = "04/08 20:35";
 
 const CLAVE_LS = "notas2026";
 const CICLO = 2026;          // el año que se está cursando
