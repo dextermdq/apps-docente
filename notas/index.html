@@ -299,6 +299,9 @@ td.col-nombre{min-width:150px}
   .val-obs{flex:1 1 200px;order:2}
   .val-btns{order:3}
 }
+/* la tabla de valoración es para el papel; en pantalla están los botones */
+.solo-print{display:none}
+@media print{ .solo-print{display:block} }
 /* variantes de la .pill del CSS compartido: solo el color, la forma es la de allá */
 .pill.tea{background:var(--p-bg);color:#065f46;font-weight:800}
 .pill.tep{background:var(--t-bg);color:#92400e;font-weight:800}
@@ -490,7 +493,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "03/08 22:47";
+const VERSION = "03/08 23:03";
 
 const CLAVE_LS = "notas2026";
 const ESTADOS_ASIS = ["Presente", "Tarde", "Ausente", "Justificado"];
@@ -1352,7 +1355,7 @@ function pintarAlumno() {
     const hayAlguna = valoracionDe(al.id, 1).valor || valoracionDe(al.id, 2).valor;
     if (hayAlguna || !imprimirSinNotas) {
       h += `<div class="recuadro"><h3>Valoración de la trayectoria</h3>
-        <div class="tabla-wrap"><table>`;
+        <div class="tabla-wrap${imprimirSinNotas ? "" : " solo-print"}"><table>`;
       for (const n of [1, 2]) {
         const v = valoracionDe(al.id, n);
         h += `<tr><td>${INFORMES[n].et}
@@ -1362,8 +1365,26 @@ function pintarAlumno() {
             ? `<span class="pill ${VAL_CLASE[v.valor]}">${v.valor}</span>`
             : `<span class="pill">sin cargar</span>`}</td></tr>`;
       }
-      h += `</table></div>
-        <p class="nota-pie">${VALORACIONES.map((x) => `<strong>${x.v}</strong> ${x.desc}`).join(" · ")}.
+      h += `</table></div>`;
+      /* los mismos tres botones que en Cargar notas, para corregir un alumno
+         suelto sin tener que ir al curso entero. No salen impresos. */
+      if (!imprimirSinNotas) {
+        h += `<div class="no-print" style="margin-top:10px">`;
+        for (const n of [1, 2]) {
+          const v = valoracionDe(al.id, n);
+          h += `<div class="val-fila">
+            <div class="quien">${INFORMES[n].et}<small>${INFORMES[n].detalle}</small></div>
+            <div class="val-btns">${VALORACIONES.map((x) =>
+              `<button type="button" class="${x.clase}" data-vi="${n}" data-vv="${x.v}"
+                 aria-pressed="${v.valor === x.v}" title="${x.desc}">${x.v}</button>`).join("")}</div>
+            <input type="text" class="val-obs" maxlength="180" data-vobs="${n}"
+              value="${esc(v.obs)}" ${v.valor ? "" : "disabled"}
+              placeholder="${v.valor ? "Observación (opcional)" : "Elegí primero una valoración"}">
+          </div>`;
+        }
+        h += `</div>`;
+      }
+      h += `<p class="nota-pie">${VALORACIONES.map((x) => `<strong>${x.v}</strong> ${x.desc}`).join(" · ")}.
           No es una nota: no entra en ningún promedio.</p></div>`;
     }
   }
@@ -1489,6 +1510,27 @@ function pintarAlumno() {
       }
       guardarCierre(al.id, campo, n);
       guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
+    });
+  }
+
+  /* valoración desde la ficha: misma regla que en Cargar notas — la letra la
+     elegís vos, y tocar la que está marcada la borra */
+  for (const b of cont.querySelectorAll(".val-btns button[data-vv]")) {
+    b.addEventListener("click", () => {
+      const n = +b.dataset.vi;
+      const actual = valoracionDe(al.id, n);
+      const nuevo = actual.valor === b.dataset.vv ? null : b.dataset.vv;
+      guardarValoracion(al.id, n, nuevo, nuevo ? actual.obs : "");
+      guardar(); reindexar(); pintarAlumno(); sincronizarDespues();
+    });
+  }
+  for (const i of cont.querySelectorAll("input.val-obs[data-vobs]")) {
+    i.addEventListener("change", () => {
+      const n = +i.dataset.vobs;
+      const actual = valoracionDe(al.id, n);
+      if (!actual.valor) return;   // sin letra no hay dónde colgar la observación
+      guardarValoracion(al.id, n, actual.valor, i.value);
+      guardar(); reindexar(); sincronizarDespues();
     });
   }
 

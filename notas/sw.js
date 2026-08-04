@@ -1,7 +1,7 @@
 /* Red primero, cache como paracaidas: con internet ves siempre la version al
    dia, y sin internet abre igual. El nombre lleva el hash del archivo, asi cada
    version nueva estrena cache y borra la anterior. */
-const CACHE = "notas-e3a477a762dd";
+const CACHE = "notas-4b0094154554";
 const ARCHIVOS = ["./", "./index.html", "./manifest.webmanifest"];
 const ESPERA = 3000;
 self.addEventListener("install", (e) => {
