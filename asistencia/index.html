@@ -559,7 +559,7 @@ const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
 
 /* Sello de esta version, para saber si un dispositivo esta al dia. */
-const VERSION = "04/08 22:34";
+const VERSION = "04/08 22:42";
 
 const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
 const SIGLAS  = ["P", "T", "A", "J"];
@@ -1095,18 +1095,34 @@ function partirLinea(linea, sep) {
 
 /** Con qué se separan las columnas, o null si es una sola columna.
  *
- *  La coma NO se usa a la ligera, y esta es la razón: los nombres se escriben
- *  "APELLIDO, Nombre". Una lista de alumnos pegada a mano tiene una coma por
- *  renglón, y tomarla como separador partía cada nombre en dos y creaba un curso
- *  llamado "PEREZ". Solo se parte por coma cuando hay comillas, que es como
- *  Excel y Google Sheets escriben un CSV de verdad. */
+ *  La coma es ambigua y hay que mirarla con cuidado: los nombres se escriben
+ *  "APELLIDO, Nombre", así que una lista de alumnos pegada a mano también tiene
+ *  una coma por renglón. Tomarla siempre como separador partía cada nombre en dos
+ *  y creaba un curso llamado "PEREZ"; no tomarla nunca dejaba afuera los CSV de
+ *  dos columnas sin comillas, que es como Excel guarda "Curso,Alumno" cuando
+ *  ningún nombre lleva coma.
+ *
+ *  Se parte por coma si hay alguna señal de que son de verdad dos columnas:
+ *    - comillas: es un CSV bien formado
+ *    - la primera fila son títulos (Curso, Alumno, …)
+ *    - el primer campo se repite mucho: es un curso con varios alumnos,
+ *      no un apellido distinto en cada renglón */
 function separadorDe(texto) {
-  const primera = texto.split(/\r?\n/)[0] || "";
-  const cuenta = (c) => (primera.match(new RegExp("\\" + c, "g")) || []).length;
-  if (cuenta("\t")) return "\t";        // pegado desde Excel o Sheets
-  if (cuenta(";")) return ";";          // CSV de Excel en español
-  if (texto.indexOf('"') >= 0 && cuenta(",")) return ",";   // CSV bien formado
-  return null;                          // una sola columna: el renglón entero
+  const lineas = texto.split(/\r?\n/).filter((l) => l.trim() !== "");
+  const primera = lineas[0] || "";
+  const cuenta = (s, c) => (s.match(new RegExp("\\" + c, "g")) || []).length;
+  if (cuenta(primera, "\t")) return "\t";     // pegado desde Excel o Sheets
+  if (cuenta(primera, ";")) return ";";       // CSV de Excel en español
+  if (!cuenta(primera, ",")) return null;
+
+  if (texto.indexOf('"') >= 0) return ",";
+  if (pareceEncabezado(primera.split(","))) return ",";
+
+  const primeros = lineas.map((l) => normNombre(l.split(",")[0]));
+  const unicos = new Set(primeros).size;
+  // la mitad o menos de valores distintos: se está repitiendo el nombre del curso
+  if (lineas.length >= 2 && unicos * 2 <= lineas.length) return ",";
+  return null;                                // una sola columna: el renglón entero
 }
 
 function grillaDe(texto) {
@@ -1135,7 +1151,9 @@ function leerPadron(texto, cursoManual) {
   const dosColumnas = datos.some((f) => f.length > 1 && f[1] !== "");
   const manual = (cursoManual || "").trim().replace(/\s+/g, " ");
   if (!dosColumnas && !manual) {
-    return { error: "Pegaste una sola columna: escribí abajo de qué curso son esos alumnos." };
+    return { error: "Leí una sola columna de alumnos. Escribí abajo de qué curso son. " +
+      "Si tu planilla tiene dos columnas separadas por coma, ponele de título " +
+      "\"Curso\" y \"Alumno\" en el primer renglón y las reconozco solas." };
   }
 
   /* los cursos que ya existen, sin contar los de ciclos cerrados */
