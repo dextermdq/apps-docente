@@ -559,7 +559,7 @@ const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/asistencia/"};
 
 /* Sello de esta version, para saber si un dispositivo esta al dia. */
-const VERSION = "04/08 20:35";
+const VERSION = "04/08 22:34";
 
 const ESTADOS = ["Presente", "Tarde", "Ausente", "Justificado"];
 const SIGLAS  = ["P", "T", "A", "J"];
@@ -1247,13 +1247,31 @@ function confirmarPadron() {
     `En la app de notas van a aparecer solos al sincronizar.`, "ok");
 }
 
+/** Lee un archivo de texto adivinando la codificación.
+ *
+ *  Excel en español no guarda los CSV en UTF-8 sino en ANSI (Windows-1252).
+ *  Leídos como UTF-8, cada acento y cada ñ se convierte en el carácter de
+ *  reemplazo y los nombres llegan rotos: "Ana Belén" entraba como "Ana Bel?n".
+ *  Si aparece ese carácter, se relee el archivo como ANSI. */
+function leerTexto(file, alTerminar) {
+  const lec = new FileReader();
+  lec.onload = () => {
+    const txt = String(lec.result || "");
+    if (txt.indexOf("�") < 0) { alTerminar(txt); return; }
+    const lec2 = new FileReader();
+    lec2.onload = () => alTerminar(String(lec2.result || ""));
+    lec2.onerror = () => alTerminar(txt);
+    lec2.readAsText(file, "windows-1252");
+  };
+  lec.readAsText(file, "utf-8");
+}
+
 $("#btnPreviaPadron").addEventListener("click", pintarPreviaPadron);
 $("#btnArchivoPadron").addEventListener("click", () => $("#filePadron").click());
 $("#filePadron").addEventListener("change", (ev) => {
   const f = ev.target.files[0]; if (!f) return;
-  const lec = new FileReader();
-  lec.onload = () => { $("#txtPadron").value = lec.result; pintarPreviaPadron(); ev.target.value = ""; };
-  lec.readAsText(f, "utf-8");
+  leerTexto(f, (txt) => { $("#txtPadron").value = txt; pintarPreviaPadron(); });
+  ev.target.value = "";
 });
 
 /* ================= VISTA: ARCHIVO ================= */

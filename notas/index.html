@@ -558,7 +558,7 @@ td.col-nombre{min-width:150px}
 const SEMILLA = {"config":{},"cursos":[],"alumnos":[],"items":[],"notas":[],"conducta":[],"manual":[]};
 const CIFRADO = null;
 const SYNC = {"url": "https://njwkwqootxmmonnwyyoy.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qd2t3cW9vdHhtbW9ubnd5eW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2OTU2NDcsImV4cCI6MjEwMTI3MTY0N30.GJXpcDX5NhkuVVv_MeFWORgNPaRwjayJZUVpciIl-Rs", "publico": "https://dextermdq.github.io/apps-docente/notas/"};
-const VERSION = "04/08 20:35";
+const VERSION = "04/08 22:34";
 
 const CLAVE_LS = "notas2026";
 const CICLO = 2026;          // el año que se está cursando
@@ -1707,13 +1707,31 @@ $("#btnCerrarImportar").addEventListener("click", () => {
   $("#txtImportar").value = ""; $("#previaImportar").innerHTML = "";
   $("#avisoImportar").innerHTML = ""; importado = null;
 });
+/** Lee un archivo de texto adivinando la codificación.
+ *
+ *  Excel en español no guarda los CSV en UTF-8 sino en ANSI (Windows-1252).
+ *  Leídos como UTF-8, cada acento y cada ñ se convierte en el carácter de
+ *  reemplazo: un "MUÑOZ" roto no cruza con ningún alumno y la nota queda afuera.
+ *  Si aparece ese carácter, se relee el archivo como ANSI. */
+function leerTexto(file, alTerminar) {
+  const lec = new FileReader();
+  lec.onload = () => {
+    const txt = String(lec.result || "");
+    if (txt.indexOf("�") < 0) { alTerminar(txt); return; }
+    const lec2 = new FileReader();
+    lec2.onload = () => alTerminar(String(lec2.result || ""));
+    lec2.onerror = () => alTerminar(txt);
+    lec2.readAsText(file, "windows-1252");
+  };
+  lec.readAsText(file, "utf-8");
+}
+
 $("#btnPrevisualizar").addEventListener("click", pintarPreviaImportar);
 $("#btnArchivoImportar").addEventListener("click", () => $("#fileImportar").click());
 $("#fileImportar").addEventListener("change", (ev) => {
   const f = ev.target.files[0]; if (!f) return;
-  const lec = new FileReader();
-  lec.onload = () => { $("#txtImportar").value = lec.result; pintarPreviaImportar(); ev.target.value = ""; };
-  lec.readAsText(f, "utf-8");
+  leerTexto(f, (txt) => { $("#txtImportar").value = txt; pintarPreviaImportar(); });
+  ev.target.value = "";
 });
 
 /* ================= CONDUCTA ================= */
