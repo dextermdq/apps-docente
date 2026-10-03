@@ -1155,16 +1155,18 @@ function pintarCargar() {
   }
 
   borrador = {};
+  const escMin = D.config.escalaMin ?? 1;
+  const escMax = D.config.escalaMax ?? 10;
   for (const a of alumnos) {
     const v = IDX.nota[a.id + "|" + it.id];
-    borrador[a.id] = v === undefined ? "" : v;
+    borrador[a.id] = v === undefined || isNaN(v) ? "" : v;
     const prom = promedioDe(a.id, it.cuatrimestre);
     const fila = crear("div", { className: "nota-fila" });
     fila.innerHTML = `<div class="quien">${esc(a.nombre)}
       <small>${prom === null ? "sin notas todavía" : "promedio " + prom.toFixed(1)}</small></div>`;
     const inp = crear("input", { type: "number", className: "nota" + (v !== undefined ? " puesta" : ""),
       value: borrador[a.id], inputMode: "numeric" });
-    inp.min = D.config.escalaMin; inp.max = D.config.escalaMax; inp.step = 1;
+    inp.min = escMin; inp.max = escMax; inp.step = 1;
     inp.dataset.a = a.id;
     fila.appendChild(inp);
     cont.appendChild(fila);
@@ -1205,7 +1207,7 @@ function pintarCargarCierre(cid, clave, alumnos, cont) {
 
     if (c.clase === "cuat") {
       const nc = notaCuatrimestre(a.id, c.cuat);
-      actual = nc.aMano ? nc.valor : "";
+      actual = nc.aMano && !isNaN(nc.valor) ? nc.valor : "";
       const faltan = faltantesDe(a.id, c.cuat).length;
       referencia = nc.calculado === null
         ? "sin notas todavía"
@@ -1213,11 +1215,11 @@ function pintarCargarCierre(cid, clave, alumnos, cont) {
           (faltan ? `  ·  le faltan ${faltan}` : "") +
           (nc.aMano ? "" : "  ·  hoy va la calculada");
     } else if (c.campo === "final") {
-      actual = ci.final === null ? "" : ci.final;
+      actual = ci.final === null || isNaN(ci.final) ? "" : ci.final;
       referencia = `1º ${ci.c1 ?? "—"}  ·  2º ${ci.c2 ?? "—"}` +
         (ci.promedio === null ? "" : `  ·  promedio ${ci.promedio.toFixed(2)}`);
     } else {
-      actual = ci[c.campo] === null ? "" : ci[c.campo];
+      actual = ci[c.campo] === null || isNaN(ci[c.campo]) ? "" : ci[c.campo];
       referencia = `final ${ci.final ?? "sin cargar"}`;
     }
 
@@ -1226,7 +1228,9 @@ function pintarCargarCierre(cid, clave, alumnos, cont) {
     fila.innerHTML = `<div class="quien">${esc(a.nombre)}<small>${referencia}</small></div>`;
     const inp = crear("input", { type: "number", inputMode: "numeric",
       className: "nota" + (actual !== "" ? " puesta" : ""), value: actual });
-    inp.min = D.config.escalaMin; inp.max = D.config.escalaMax; inp.step = 1;
+    const escMin = D.config.escalaMin ?? 1;
+    const escMax = D.config.escalaMax ?? 10;
+    inp.min = escMin; inp.max = escMax; inp.step = 1;
     inp.dataset.a = a.id;
     fila.appendChild(inp);
     cont.appendChild(fila);
