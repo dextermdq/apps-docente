@@ -807,7 +807,9 @@ function promedioDe(alumnoId, cuat) {
   // y la conducta existe en los dos cuatrimestres, si contara sola todos tendrian
   // un 10 en un cuatrimestre donde todavia no entregaron nada.
   if (!v.some((x) => x.item.tipo !== "conducta")) return null;
-  return v.reduce((t, x) => t + x.valor, 0) / v.length;
+  const validos = v.filter(x => !isNaN(x.valor));
+  if (!validos.length) return null;
+  return validos.reduce((t, x) => t + x.valor, 0) / validos.length;
 }
 
 /** La nota del cuatrimestre: la calculada, salvo que la hayas escrito vos. */
@@ -1939,7 +1941,7 @@ function pintarAlumno() {
     h += `<div class="recuadro"><h3>Nota del ${cuat}º cuatrimestre</h3>
       <div class="final">
         <input type="number" id="notaFinal" min="${D.config.escalaMin}" max="${D.config.escalaMax}"
-          step="1" value="${nc.valor === null ? "" : nc.valor}">
+          step="1" value="${nc.valor === null || isNaN(nc.valor) ? "" : nc.valor}">
         <div>
           <div class="calculado">Promedio calculado: <strong>${
             nc.calculado === null ? "—" : nc.calculado}</strong>${
@@ -1967,17 +1969,17 @@ function pintarAlumno() {
         <div>
           <label class="et" for="notaFinalAnual">Nota final</label>
           <input type="number" id="notaFinalAnual" min="${D.config.escalaMin}"
-            max="${D.config.escalaMax}" step="1" value="${ci.final === null ? "" : ci.final}">
+            max="${D.config.escalaMax}" step="1" value="${ci.final === null || isNaN(ci.final) ? "" : ci.final}">
         </div>
         <div>
           <label class="et" for="notaDiciembre">Diciembre</label>
           <input type="number" id="notaDiciembre" min="${D.config.escalaMin}"
-            max="${D.config.escalaMax}" step="1" value="${ci.diciembre === null ? "" : ci.diciembre}">
+            max="${D.config.escalaMax}" step="1" value="${ci.diciembre === null || isNaN(ci.diciembre) ? "" : ci.diciembre}">
         </div>
         <div>
           <label class="et" for="notaFebrero">Febrero</label>
           <input type="number" id="notaFebrero" min="${D.config.escalaMin}"
-            max="${D.config.escalaMax}" step="1" value="${ci.febrero === null ? "" : ci.febrero}">
+            max="${D.config.escalaMax}" step="1" value="${ci.febrero === null || isNaN(ci.febrero) ? "" : ci.febrero}">
         </div>
       </div>
       <p class="nota-pie">Estas tres las escribís vos. El promedio de arriba es solo para
