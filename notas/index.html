@@ -3059,9 +3059,11 @@ document.addEventListener("visibilitychange", () => {
 });
 window.addEventListener("focus", () => sincronizarDespues());
 
-if (configNube()) {
-  setInterval(() => sincronizar(false), 30000);
-}
+setTimeout(() => {
+  if (configNube()) {
+    setInterval(() => sincronizar(false), 30000);
+  }
+}, 2000);
 
 /* ---------------- desbloqueo y enlace ---------------- */
 
