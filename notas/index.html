@@ -3039,7 +3039,7 @@ function pintarEstadoNube(trabajando) {
     <tr><td>Estado</td><td class="num">${trabajando ? "Sincronizando…"
       : navigator.onLine ? "Conectado" : "Sin conexión"}</td></tr>
     <tr><td>Última sincronización</td><td class="num">${
-      s.ultima ? fechaLarga(s.ultima.slice(0, 10)) + " " + s.ultima.slice(11, 16) : "nunca"}</td></tr>
+      s.ultima ? new Date(s.ultima).toLocaleString("es-AR", { dateStyle: "long", timeStyle: "short" }) : "nunca"}</td></tr>
     <tr><td>Sin subir</td><td class="num">${pend}</td></tr>
   </table></div>`;
 }
